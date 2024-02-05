@@ -4,60 +4,72 @@ using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using SamplePlugin.Windows;
+using VTimer.Windows;
+using VTimer.Helpers;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace SamplePlugin
+namespace VTimer
 {
     public sealed class Plugin : IDalamudPlugin
     {
         public string Name => "VTimer";
+        private int counter = 0;
         private const string CommandName = "/vtimer";
 
         private DalamudPluginInterface PluginInterface { get; init; }
         private ICommandManager CommandManager { get; init; }
-        public Configuration Configuration { get; init; }
+        //public PluginConfiguration Configuration { get; init; }
         public WindowSystem WindowSystem = new("VTimer");
 
-        private ConfigWindow ConfigWindow { get; init; }
-        private MainWindow MainWindow { get; init; }
+        public EorzeanTimeManager ETM = new EorzeanTimeManager();
+
+        public MainWindow MainWindow { get; init; }
 
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-            [RequiredVersion("1.0")] ICommandManager commandManager)
+            [RequiredVersion("1.0")] ICommandManager commandManager
+            ) //[RequiredVersion("1.0")] IChatGui chat
         {
-            this.PluginInterface = pluginInterface;
-            this.CommandManager = commandManager;
+            _ = pluginInterface.Create<Service>();
+            Service.Plugin = this;
 
-            this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            this.Configuration.Initialize(this.PluginInterface);
+            this.PluginInterface = pluginInterface;
+            Service.CommandManager = commandManager;
+
+            Service.Configuration = this.PluginInterface.GetPluginConfig() as PluginConfiguration ?? new PluginConfiguration();
+            Service.Configuration.Initialize(this.PluginInterface);
 
             // you might normally want to embed resources and load them from the manifest stream
-            //var imagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
-            //var goatImage = this.PluginInterface.UiBuilder.LoadImage(imagePath);
+            // var imagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
+            // var goatImage = this.PluginInterface.UiBuilder.LoadImage(imagePath);
 
-            ConfigWindow = new ConfigWindow(this);
             MainWindow = new MainWindow(this);
             
-            WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
 
-            this.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+            Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
             {
                 HelpMessage = "A useful message to display in /xlhelp, such as this"
             });
 
             this.PluginInterface.UiBuilder.Draw += DrawUI;
             this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+
+            Consts.PresetTimers.LoadTimers();
+
+            Service.Framework.Update += onUpdate;
         }
 
         public void Dispose()
         {
             this.WindowSystem.RemoveAllWindows();
             
-            ConfigWindow.Dispose();
             MainWindow.Dispose();
             
-            this.CommandManager.RemoveHandler(CommandName);
+            Service.CommandManager.RemoveHandler(CommandName);
+            Service.Framework.Update -= onUpdate;
+            Service.Trackers = new();
         }
 
         private void OnCommand(string command, string args)
@@ -73,7 +85,21 @@ namespace SamplePlugin
 
         public void DrawConfigUI()
         {
-            ConfigWindow.IsOpen = true;
+            MainWindow.IsOpen = true;
+        }
+
+        //Core part of the program, runs every frame to my understanding.
+        public void onUpdate(IFramework framework) {
+            counter += 1;
+            if (counter % 60 == 0) {
+                var now = Service.ETM.now();
+                foreach (Tracker tracker in Service.Trackers) {
+                    if (tracker.getNextWindow() < now + tracker.forewarning ) {
+                        Service.Chat.Print("[VTimer] " + tracker.name + " is up " + (tracker.forewarning == 0 ? "." : "in " + (tracker.getNextWindow() - now)  + " seconds"));
+                        tracker.recycle();
+                    }
+                }
+            }
         }
     }
 }

@@ -4,14 +4,20 @@ using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
-namespace SamplePlugin.Windows;
+namespace VTimer.Windows;
+
+enum Tab {
+    Main,
+    Eureka,
+    Weather,
+}
 
 public class MainWindow : Window, IDisposable
 {
     private Plugin Plugin;
 
     public MainWindow(Plugin plugin) : base(
-        "My Amazing Window", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        "VTimer Configuration") //ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         this.SizeConstraints = new WindowSizeConstraints
         {
@@ -28,11 +34,22 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
-        ImGui.Text($"The random config bool is {this.Plugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
-
-        if (ImGui.Button("Show Settings"))
+        //ImGui.Spacing();
+        if (ImGui.BeginTabBar("MyTabBar"))
         {
-            this.Plugin.DrawConfigUI();
+            if (ImGui.BeginTabItem("Main")) {
+                ImGui.Text($"It is {this.Plugin.ETM.getCurrentEorzeanTime()}");
+                ImGui.EndTabItem();
+            }
+            if (ImGui.BeginTabItem("Eureka")) {
+                Eureka.Draw(this.Plugin);
+                ImGui.EndTabItem();
+            }
+            if (ImGui.BeginTabItem("Weather")) {
+                Weather.Draw(this.Plugin);
+                ImGui.EndTabItem();
+            }
+            ImGui.EndTabBar();
         }
 
         ImGui.Spacing();
