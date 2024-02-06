@@ -8,13 +8,14 @@ using VTimer.Windows;
 using VTimer.Helpers;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace VTimer
 {
     public sealed class Plugin : IDalamudPlugin
     {
         public string Name => "VTimer";
-        private int counter = 0;
+        private long counter = 0;
         private const string CommandName = "/vtimer";
 
         private DalamudPluginInterface PluginInterface { get; init; }
@@ -94,8 +95,10 @@ namespace VTimer
             if (counter % 60 == 0) {
                 var now = Service.ETM.now();
                 foreach (Tracker tracker in Service.Trackers) {
-                    if (tracker.getNextWindow() < now + tracker.forewarning ) {
-                        Service.Chat.Print("[VTimer] " + tracker.name + " is up " + (tracker.forewarning == 0 ? "." : "in " + (tracker.getNextWindow() - now)  + " seconds"));
+                    Service.PluginLog.Verbose(tracker.name + " next window: " + tracker.getNextWindowInQueue()%10000 + " now + forewarning: " + (now+tracker.getForewarning()) %10000);
+                    if (tracker.getNextWindowInQueue() < now + tracker.getForewarning() ) {
+                        Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.getNextWindowInQueue() - now)  + " seconds");
+                        tracker.notify();
                         tracker.recycle();
                     }
                 }

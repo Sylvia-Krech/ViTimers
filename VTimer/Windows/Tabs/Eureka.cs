@@ -14,47 +14,46 @@ public class Eureka {
         // please let me know
 
         ImGui.Text($"Alert me X seconds before a NM window:");
-        var preWarn = Service.Configuration.EurekaPreWarn;
+        var preWarn = Service.Configuration.EurekaForewarning.Value;
         ImGui.InputInt("", ref preWarn, 30, 60); 
-        if (preWarn != Service.Configuration.EurekaPreWarn){
-            Service.Configuration.EurekaPreWarn = preWarn;
+        if (preWarn != Service.Configuration.EurekaForewarning.Value){
+            Service.Configuration.EurekaForewarning.Value = preWarn;
             Service.Configuration.Save();
         }
         var Pazuzu = Service.Configuration.Pazuzu;
         if(ImGui.Checkbox("Pazuzu", ref Pazuzu)){
-            Service.PluginLog.Verbose("Charlie");
             Service.Configuration.Pazuzu = Pazuzu;
-            PresetTimers.AddOrRemoveTimer("Pazuzu", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddOrRemoveTimer("Pazuzu", ref Service.Configuration.EurekaForewarning);
             Service.Configuration.Save();
         }
         var Crab = Service.Configuration.Crab;
         if(ImGui.Checkbox("Crab", ref Crab)){
             Service.Configuration.Crab = Crab;
-            PresetTimers.AddOrRemoveTimer("Crab", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddOrRemoveTimer("Crab", ref Service.Configuration.EurekaForewarning);
             Service.Configuration.Save();
         }
         var Cassie = Service.Configuration.Cassie;
         if(ImGui.Checkbox("Cassie", ref Cassie)){
             Service.Configuration.Cassie = Cassie;
-            PresetTimers.AddOrRemoveTimer("Cassie", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddOrRemoveTimer("Cassie", ref Service.Configuration.EurekaForewarning);
             Service.Configuration.Save();
         }
         var Luigi = Service.Configuration.Luigi;
         if(ImGui.Checkbox("Luigi", ref Luigi)){
             Service.Configuration.Luigi = Luigi;
-            PresetTimers.AddOrRemoveTimer("Luigi", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddOrRemoveTimer("Luigi", ref Service.Configuration.EurekaForewarning);
             Service.Configuration.Save();
         }
         var Skoll = Service.Configuration.Skoll;
         if(ImGui.Checkbox("Skoll", ref Skoll)){
             Service.Configuration.Skoll = Skoll;
-            PresetTimers.AddOrRemoveTimer("Skoll", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddOrRemoveTimer("Skoll", ref Service.Configuration.EurekaForewarning);
             Service.Configuration.Save();
         }
         var Penny = Service.Configuration.Penny;
         if(ImGui.Checkbox("Penny", ref Penny)){
             Service.Configuration.Penny = Penny;
-            PresetTimers.AddOrRemoveTimer("Penny", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddOrRemoveTimer("Penny", ref Service.Configuration.EurekaForewarning);
             Service.Configuration.Save();
         }
         var ColdBox = Service.Configuration.ColdBox;

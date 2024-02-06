@@ -10,37 +10,37 @@ class PresetTimers {
         //TODO add support for only garunteed spawns
         if (Service.Configuration.Pazuzu) {
             Service.PluginLog.Verbose("Attempting to add Paz");
-            PresetTimers.AddTimer("Pazuzu", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddTimer("Pazuzu", ref Service.Configuration.EurekaForewarning);
         }
         if (Service.Configuration.Crab) {
             Service.PluginLog.Verbose("Attempting to add Crab");
-            PresetTimers.AddTimer("Crab", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddTimer("Crab", ref Service.Configuration.EurekaForewarning);
         }
         if (Service.Configuration.Cassie) {
             Service.PluginLog.Verbose("Attempting to add Cassie");
-            PresetTimers.AddTimer("Cassie", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddTimer("Cassie", ref Service.Configuration.EurekaForewarning);
         }
         if (Service.Configuration.Luigi) {
             Service.PluginLog.Verbose("Attempting to add Luigi");
-            PresetTimers.AddTimer("Luigi", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddTimer("Luigi", ref Service.Configuration.EurekaForewarning);
         }
         if (Service.Configuration.Skoll) {
             Service.PluginLog.Verbose("Attempting to add Skoll");
-            PresetTimers.AddTimer("Skoll", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddTimer("Skoll", ref Service.Configuration.EurekaForewarning);
         }
         if (Service.Configuration.Penny) {
             Service.PluginLog.Verbose("Attempting to add Penny");
-            PresetTimers.AddTimer("Penny", ref Service.Configuration.EurekaPreWarn);
+            PresetTimers.AddTimer("Penny", ref Service.Configuration.EurekaForewarning);
         }
     }
-    public static void AddOrRemoveTimer(string name, ref int forewarning){
+    public static void AddOrRemoveTimer(string name, ref KeyVal<string, int> forewarning){
         if (!doesTrackerExist(name)) {
             AddTimer(name, ref forewarning);
         } else {
             removeTracker(name);
         }
     }
-    public static void AddTimer(string name, ref int forewarning){
+    public static void AddTimer(string name, ref KeyVal<string, int> forewarning){
         //{"Luigi", new ArrayList() {Zones.EurekaPagos, Weathers.NA, dayCycle.Night, 0, Service.Configuration.EurekaPreWarn} }
         if (!doesTrackerExist(name)) {
             var condition = Presets.Timers[name];

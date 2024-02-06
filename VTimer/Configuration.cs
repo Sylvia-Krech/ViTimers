@@ -1,6 +1,8 @@
 ﻿using Dalamud.Configuration;
 using Dalamud.Plugin;
 using System;
+using System.Collections.Generic;
+using VTimer.Helpers;
 
 namespace VTimer
 {
@@ -9,10 +11,9 @@ namespace VTimer
     {
         public int Version { get; set; } = 0;
 
-        public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-
         // Eureka Tab
-        public int EurekaPreWarn = 180;
+        //EurekaPreWarn may hold garbage int data.
+        public KeyVal<string, int> EurekaForewarning = new("Eureka", 180);
         public bool Pazuzu { get; set; } = false; //gales + night
         public bool Crab { get; set; } = false; //fog
         public bool Cassie { get; set; } = false; //blizzards
