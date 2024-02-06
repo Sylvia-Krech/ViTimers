@@ -1,0 +1,27 @@
+[
+    {
+      "Author": "Sylvia",
+      "Name": "VTimer",
+      "Description": "A simple plugin for tracking Eureka/BA Spawns.",
+      "InternalName": "VTimer",
+      "AssemblyVersion": "0.0.0.1",
+      "TestingAssemblyVersion": "0.0.0.1",
+      "RepoUrl": "https://github.com/Sylvia-Krech/ViTimers",
+      "ApplicableVersion": "any",
+      "DalamudApiLevel": 9,
+      "IsHide": "False",
+      "IsTestingExclusive": "False",
+      "DownloadCount": 0,
+      "LastUpdate": 0,
+      "LoadPriority": 99999,
+      "LoadRequiredState": 2,
+      "LoadSync": true,
+      "DownloadLinkInstall": "https://github.com/Sylvia-Krech/ViTimers/releases/download/v0.0.0.1/latest.zip",
+      "DownloadLinkTesting": "https://github.com/Sylvia-Krech/ViTimers/releases/download/v0.0.0.1/latest.zip",
+      "DownloadLinkUpdate": "https://github.com/Sylvia-Krech/ViTimers/releases/download/v0.0.0.1/latest.zip",
+      "IconUrl": "https://raw.githubusercontent.com/xivdev/Penumbra/master/images/icon.png",
+      "Tags": [
+        "Timers"
+      ]
+    }
+]
