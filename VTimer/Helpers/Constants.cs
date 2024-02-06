@@ -156,7 +156,7 @@ class Presets {
     {"Preperation", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Thunder}, dayCycle.NA, 0) },
     {"Care", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.DustStorms}, dayCycle.NA, 0) },
     {"Support", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales}, dayCycle.NA, 0) },
-    {"Care", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.Snow}, dayCycle.NA, 0) },
+    {"History", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.Snow}, dayCycle.NA, 0) },
     {"Artistry", new Conditions(Zones.Zadnor, new List<Weathers>{Weathers.Thunder, Weathers.Rain}, dayCycle.NA, 0) },
   };
 }
