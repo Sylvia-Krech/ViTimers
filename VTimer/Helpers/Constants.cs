@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Lumina.Excel.GeneratedSheets;
 using VTimer.Helpers;
 
 // Weather data taken from https://github.com/Asvel/ffxiv-weather/blob/master/src/Weather.ts
@@ -62,6 +63,9 @@ public enum dayCycle {
   Night,
 }
 
+
+// I admit, this is terrible. yes, data is being stored in a .cs.
+// My only excuse is that I am new to c# and just want this thing to run without fighting io handlers.
 class WeatherList
 {
   public static Dictionary<Zones, ArrayList> ByZone = new Dictionary<Zones, ArrayList> {
@@ -140,12 +144,20 @@ class WeatherList
 
 class Presets {
   public static Dictionary<string, Conditions> Timers= new Dictionary<string, Conditions> {
+    // Eureka
     {"Pazuzu", new Conditions(Zones.EurekaAnemos, new List<Weathers>{Weathers.Gales}, dayCycle.Night, 0) },
     {"Crab", new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Fog}, dayCycle.NA, 0) },
     {"Cassie", new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Blizzards}, dayCycle.NA, 0) },
     {"Skoll", new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.Blizzards}, dayCycle.NA, 0) },
     {"Penny", new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.HeatWaves}, dayCycle.NA, 0) },
-    {"Luigi", new Conditions(Zones.EurekaPagos, new List<Weathers>{}, dayCycle.Night, 0) }
+    {"Luigi", new Conditions(Zones.EurekaPagos, new List<Weathers>{}, dayCycle.Night, 0) },
+
+    //Bozja
+    {"Preperation", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Thunder}, dayCycle.NA, 0) },
+    {"Care", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.DustStorms}, dayCycle.NA, 0) },
+    {"Support", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales}, dayCycle.NA, 0) },
+    {"Care", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.Snow}, dayCycle.NA, 0) },
+    {"Artistry", new Conditions(Zones.Zadnor, new List<Weathers>{Weathers.Thunder, Weathers.Rain}, dayCycle.NA, 0) },
   };
 }
 

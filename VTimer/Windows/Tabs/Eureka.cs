@@ -10,14 +10,12 @@ namespace VTimer.Windows;
 
 public class Eureka {
     public static void Draw(Plugin plugin) {
-        ImGui.Text($"This is proof Eureka tab works");
-        ImGui.Text($"The current weather # is: ");
         // I hate that I cannot turn this mess into a pre-processor macro, if there is a better way than massive code duplication
         // please let me know
-        var preWarn = Service.Configuration.EurekaPreWarn;
-        // TODO make this a text input, even though thats a goddamn headache.
+
         ImGui.Text($"Alert me X seconds before a NM window:");
-        ImGui.SliderInt("", ref preWarn, 0, 3600, "%d"); //, flags
+        var preWarn = Service.Configuration.EurekaPreWarn;
+        ImGui.InputInt("", ref preWarn, 30, 60); 
         if (preWarn != Service.Configuration.EurekaPreWarn){
             Service.Configuration.EurekaPreWarn = preWarn;
             Service.Configuration.Save();

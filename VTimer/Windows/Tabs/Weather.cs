@@ -12,7 +12,6 @@ namespace VTimer.Windows;
 public class Weather {
     public static void Draw(Plugin plugin) {
         var weatherNumber = plugin.ETM.getCurrentWeatherNumber();
-        ImGui.Text($"This is proof the Weather tab works");
         //ImGui.Text($"Current Timestamp: {plugin.ETM.startTime}");
         ImGui.Text($"The current weather # is: {weatherNumber}");
         foreach(var zone in WeatherList.ByZone)

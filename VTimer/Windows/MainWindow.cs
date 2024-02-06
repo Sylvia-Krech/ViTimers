@@ -39,6 +39,7 @@ public class MainWindow : Window, IDisposable
         {
             if (ImGui.BeginTabItem("Main")) {
                 ImGui.Text($"It is {this.Plugin.ETM.getCurrentEorzeanTime()}");
+                CurrentTimers.Draw(this.Plugin);
                 ImGui.EndTabItem();
             }
             if (ImGui.BeginTabItem("Eureka")) {

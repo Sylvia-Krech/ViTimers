@@ -45,23 +45,26 @@ public class EorzeanTimeManager {
         return this.weatherFromUnix(zone, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
     }
 
-    int getEorzeanHour(long unix) {
+    public int getEorzeanHour(long unix) {
         int bell = (int)(unix / 175);
         // Do the magic 'cause for calculations 16:00 is 0, 00:00 is 8 and 08:00 is 16
         int hour = bell % 24;
         return hour;
     }
-    int getEorzeanMinute(long unix) {
+    public int getEorzeanMinute(long unix) {
         int secondsIntoThisEorzeanHour = (int)(unix % 175);
         double portionOfHour = (double)secondsIntoThisEorzeanHour / 175.0;
         int minutes = (int)(60.0 * portionOfHour); 
         return minutes;
     }
-    public string getCurrentEorzeanTime() {
-        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        int hour = this.getEorzeanHour(now);
-        int minute = this.getEorzeanMinute(now);
+
+    public string getEorzeanTime(long unix) {
+        int hour = this.getEorzeanHour(unix);
+        int minute = this.getEorzeanMinute(unix);
         return hour.ToString() + ":" + (minute < 10 ? "0" : "") + minute.ToString();
+    }
+    public string getCurrentEorzeanTime() {
+        return getEorzeanTime(now());
     }
 
     public long getCurrentWeatherNumber() {
@@ -69,24 +72,34 @@ public class EorzeanTimeManager {
         return this.unixToWeatherNumber(now);
     }
 
+    //TODO make this a part of Conditions, makes more sense there anyways.
     //I am midly worried this will become a mess
     //TODO make it more intelligently check based off of parameters, i.e. if only weather, do increments of 8 hours on the reset line
     public long findNextWindow(long start, Conditions condition) {
         long now = start;
-        now += now % 175; //round up to next nearest hour 
+        now += 175 - (now % 175); //round up to next nearest hour 
         int bell = this.getEorzeanHour(now);
         int numRepeated = 0;
         long repeatWeathersStart = 0;
         int failsafe = 0;
-        //skip current weather if it is the target weather
-        while (!condition.HasNoWeatherCondition() && condition.isThisWeatherValid(this.weatherFromUnix(condition.zone, now))) {
+        //skip current weather/daycycle if it is the target weather
+        while (condition.isTimeValid(now, bell)) {
+            //Service.PluginLog.Verbose(now.ToString() + " " + bell.ToString() + " " + condition.isTimeValid(now, bell).ToString());
+            failsafe += 1;
+            if (failsafe >= 1000) {
+                Service.PluginLog.Warning("Skipping current window failed after " + failsafe.ToString() + " iterations");
+                return 0 ;
+            }
+            
             now += 175;
             bell += 1;
+            bell = bell%24;
         }
 
         while (true){
             now += 175;
             bell += 1;
+            bell = bell%24;
             //Service.PluginLog.Verbose("Weather in " + condition.zone.ToString() + " at " + now.ToString() + " is " + this.weatherFromUnix(condition.zone, now));
             failsafe += 1;
             if (failsafe >= 10000) {
@@ -115,8 +128,6 @@ public class EorzeanTimeManager {
                 }
             }
             numRepeated = 0; //maybe move into an else?
-            now += 175;
-            bell += 1;
         }
 
         if (condition.repeatWeathers != 0) {
@@ -127,7 +138,7 @@ public class EorzeanTimeManager {
 
     internal long findNextWindow(Tracker tracker)
     {
-        Service.PluginLog.Verbose("Queue Length: " + tracker.nextWindows.Count.ToString());
+        //Service.PluginLog.Verbose("Queue Length: " + tracker.nextWindows.Count.ToString());
         if (tracker.nextWindows.Count == 0) {
             return this.findNextWindow(this.now() - (180 * 60), tracker.condition);
         }
@@ -135,14 +146,29 @@ public class EorzeanTimeManager {
     }
 
     internal string delayToTime(long delay) {
-        long seconds = delay & 60;
+        long seconds = delay % 60;
         delay /= 60;
-        long minutes = delay & 60;
+        string sec = seconds.ToString();
+        if (sec.Length == 1) {
+            sec = "0" + sec;
+        }
+
+        long minutes = delay % 60;
         delay /= 60;
-        long hours = delay & 60;
+        string min = minutes.ToString();
+        if (min.Length == 1) {
+            min = "0" + min;
+        }
+        
+        long hours = delay % 24;
         delay /= 24;
+        string hrs = hours.ToString();
+        if (hrs.Length == 1) {
+            hrs = "0" + hrs;
+        }
+        
         long days = delay;
-        return days.ToString() + ":" + hours.ToString() + ":" +minutes.ToString() + ":" +seconds.ToString();
+        return days.ToString() + ":" + hrs + ":" + min + ":" + sec;
     }
 }
 

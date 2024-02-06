@@ -29,7 +29,7 @@ namespace VTimer
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
             [RequiredVersion("1.0")] ICommandManager commandManager
-            ) //[RequiredVersion("1.0")] IChatGui chat
+            )
         {
             _ = pluginInterface.Create<Service>();
             Service.Plugin = this;

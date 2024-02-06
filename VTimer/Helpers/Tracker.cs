@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Lumina.Excel.GeneratedSheets;
 using VTimer.Consts;
 
 
@@ -21,7 +19,7 @@ public class Tracker {
         while (this.getNextWindow() < Service.ETM.now()) {
             this.recycle();
         }
-        Service.PluginLog.Verbose(name + "Finalized, it is up in " + (this.getNextWindow() - Service.ETM.now()).ToString() + " seconds.");
+        Service.PluginLog.Verbose(name + " Finalized, it is up in " + (this.getNextWindow() - Service.ETM.now()).ToString() + " seconds.");
     }
 
     public Tracker(string n, Consts.Zones z, Consts.Weathers w, Consts.dayCycle dc, int rw, ref int fw)
@@ -38,46 +36,16 @@ public class Tracker {
     public void findAnotherWindow(){
         var time = Service.ETM.findNextWindow(this);
         nextWindows.Add(time);
-        Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time - Service.ETM.now()).ToString() + " seconds.");
+        if (time > Service.ETM.now()) {
+            Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time - Service.ETM.now()).ToString() + " seconds." +
+            " At " + Service.ETM.getEorzeanTime(time) + "ET");
+        }
+
     }
 
     public void recycle() {
         this.findAnotherWindow();
         this.previousWindow = this.nextWindows[0];
         this.nextWindows.RemoveAt(0);
-    }
-}
-
-public class Conditions {
-    internal Zones zone;
-    internal dayCycle dayCycle;
-    internal List<Weathers> weathers;
-    internal int repeatWeathers;
-    public Conditions (Zones z, List<Weathers> w, dayCycle dc, int rw){
-        this.zone = z;
-        this.dayCycle = dc;
-        this.weathers = w;
-        this.repeatWeathers = rw;
-    }
-
-    internal bool HasNoWeatherCondition()
-    {
-        return weathers.Count == 0;
-    }
-
-    internal bool isBellWithinDayCycle(int bell)
-    {
-        if (this.dayCycle == dayCycle.NA) {
-            return true;
-        } else if (this.dayCycle == dayCycle.Day && (bell >= 6 || bell < 18)) {
-            return true;
-        } else if (this.dayCycle == dayCycle.Night && (bell < 6 || bell >= 18)) {
-            return true;
-        }
-        return false;
-    }
-
-    internal bool isThisWeatherValid(Weathers w){
-        return this.weathers.Contains(w);
     }
 }
