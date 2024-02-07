@@ -38,7 +38,7 @@ public class MainWindow : Window, IDisposable
         if (ImGui.BeginTabBar("MyTabBar"))
         {
             if (ImGui.BeginTabItem("Main")) {
-                ImGui.Text($"It is {this.Plugin.ETM.getCurrentEorzeanTime()}");
+                ImGui.Text($"It is {this.EorzeanTime.getCurrentEorzeanTime()}");
                 CurrentTimers.Draw(this.Plugin);
                 ImGui.EndTabItem();
             }
