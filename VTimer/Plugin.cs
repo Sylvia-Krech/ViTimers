@@ -23,7 +23,7 @@ namespace VTimer
         //public PluginConfiguration Configuration { get; init; }
         public WindowSystem WindowSystem = new("VTimer");
 
-        public EorzeanTimeManager ETM = new EorzeanTimeManager();
+        public EorzeanTime ETM = new EorzeanTime();
 
         public MainWindow MainWindow { get; init; }
 
@@ -93,7 +93,7 @@ namespace VTimer
         public void onUpdate(IFramework framework) {
             counter += 1;
             if (counter % 60 == 0) {
-                var now = Service.ETM.now();
+                var now = EorzeanTime.now();
                 foreach (Tracker tracker in Service.Trackers) {
                     Service.PluginLog.Verbose(tracker.name + " next window: " + tracker.getNextWindowInQueue()%10000 + " now + forewarning: " + (now+tracker.getForewarning()) %10000);
                     if (tracker.getNextWindowInQueue() <= now + tracker.getForewarning() ) {

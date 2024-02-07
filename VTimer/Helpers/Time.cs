@@ -3,10 +3,12 @@ using Lumina.Excel.GeneratedSheets;
 using VTimer.Consts;
 
 namespace VTimer.Helpers;
-public class EorzeanTimeManager {
+
+//TODO refactor this all into static member functions, as ETM does not store any values internally, then remove ETM from Service
+public class EorzeanTime {
 
     //constructor
-    public EorzeanTimeManager(){
+    public EorzeanTime(){
     }
 
     public long now(){

@@ -37,20 +37,20 @@ public class Conditions {
     }
 
     internal bool isTimeValid(long unix) {
-        return isTimeValid(unix, Service.ETM.getEorzeanHour(unix));
+        return isTimeValid(unix, EorzeanTime.getEorzeanHour(unix));
     }
 
     //doesnt check for repeat weathers
     internal bool isTimeValid(long unix, int bell) {
         if (!this.isBellWithinDayCycle(bell)){ return false; }
         if (!this.HasNoWeatherCondition()) {
-            if (!this.isThisWeatherValid(Service.ETM.weatherFromUnix(this.zone, unix))) { return false; }
+            if (!this.isThisWeatherValid(EorzeanTime.weatherFromUnix(this.zone, unix))) { return false; }
         }
         return true;
     }
 
     internal long unixOfWindowEnd(long unix) {
-        int bell = Service.ETM.getEorzeanHour(unix);
+        int bell = EorzeanTime.getEorzeanHour(unix);
         long failsafe = 0;
         while (this.isTimeValid(unix, bell)) {
             //Service.PluginLog.Verbose(now.ToString() + " " + bell.ToString() + " " + condition.isTimeValid(now, bell).ToString());

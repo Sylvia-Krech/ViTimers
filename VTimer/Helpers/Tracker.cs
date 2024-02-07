@@ -19,10 +19,10 @@ public class Tracker {
         this.condition = c;
         this.forewarning = fw;
         this.findAnotherWindow();
-        while (this.getNextWindowInQueue() < Service.ETM.now()) {
+        while (this.getNextWindowInQueue() < EorzeanTime.now()) {
             this.recycle();
         }
-        Service.PluginLog.Verbose(name + " Finalized, it is up in " + (this.getNextWindowInQueue() - Service.ETM.now()).ToString() + " seconds.");
+        Service.PluginLog.Verbose(name + " Finalized, it is up in " + (this.getNextWindowInQueue() - EorzeanTime.now()).ToString() + " seconds.");
     }
 
     public Tracker(string n, Consts.Zones z, Consts.Weathers w, Consts.dayCycle dc, int rw, ref KeyVal<string, int> fw)
@@ -33,7 +33,7 @@ public class Tracker {
     }
 
     public long getUpcommingWindow(){
-        if (this.previousWindowStart > Service.ETM.now()) {
+        if (this.previousWindowStart > EorzeanTime.now()) {
             return this.previousWindowStart;
         }
         return getNextWindowInQueue();
@@ -44,11 +44,11 @@ public class Tracker {
     }
 
     public void findAnotherWindow(){
-        var time = Service.ETM.findNextWindow(this);
+        var time = EorzeanTime.findNextWindow(this);
         nextWindows.Add(time);
-        if (time > Service.ETM.now()) {
-            Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time - Service.ETM.now()).ToString() + " seconds." +
-            " At " + Service.ETM.getEorzeanTime(time) + "ET");
+        if (time > EorzeanTime.now()) {
+            Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time - EorzeanTime.now()).ToString() + " seconds." +
+            " At " + EorzeanTime.getEorzeanTime(time) + "ET");
         }
 
     }
@@ -69,7 +69,7 @@ public class Tracker {
     }
 
     public void notify() {
-        string output = "[VTimer] " + this.name + " is up" + (this.getForewarning() == 0 ? "." : " in " + (this.getNextWindowInQueue() - Service.ETM.now()) + " seconds.");
+        string output = "[VTimer] " + this.name + " is up" + (this.getForewarning() == 0 ? "." : " in " + (this.getNextWindowInQueue() - EorzeanTime.now()) + " seconds.");
         if (this.forewarning.Key == "Eureka") {
             long minutesAgo = (this.getGap() + 1) / 61;
             if (minutesAgo < 180){
@@ -81,11 +81,11 @@ public class Tracker {
 
     public void isUpNextInText() {
         string output = this.name;
-        if (this.previousWindowEnd < Service.ETM.now()){
-            output += " is up next in " + Service.ETM.delayToTime(this.getUpcommingWindow() - Service.ETM.now());
+        if (this.previousWindowEnd < EorzeanTime.now()){
+            output += " is up next in " + EorzeanTime.delayToTime(this.getUpcommingWindow() - EorzeanTime.now());
             ImGui.TextColored(ConstantVars.CurrentlyDownColor, output);
         } else {
-            output += " is up now, for " + Service.ETM.delayToTime(this.previousWindowEnd - Service.ETM.now());
+            output += " is up now, for " + EorzeanTime.delayToTime(this.previousWindowEnd - EorzeanTime.now());
             ImGui.TextColored(ConstantVars.CurrentlyUpColor, output);
         }
     }
