@@ -17,7 +17,6 @@ internal class Service
     //internal static DalamudContextMenu ContextMenu { get; set; } = null!; 
     //internal static Ipc Ipc { get; set; } = null!;
 
-    internal static EorzeanTime ETM { get; set; } = new();
     internal static List<Tracker> Trackers { get; set; } = new();
 
 

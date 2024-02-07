@@ -5,17 +5,14 @@ using VTimer.Consts;
 namespace VTimer.Helpers;
 
 //TODO refactor this all into static member functions, as ETM does not store any values internally, then remove ETM from Service
-public class EorzeanTime {
+public static class EorzeanTime {
 
-    //constructor
-    public EorzeanTime(){
-    }
 
-    public long now(){
+    public static long now(){
         return DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     } 
-    //functions
-    public int unixToWeatherNumber(long unix) {
+
+    public static int unixToWeatherNumber(long unix) {
         // Get Eorzea hour for weather start (every ingame hour is 175 seconds)
         int bell = (int)(unix / 175);
         // Do the magic 'cause for calculations 16:00 is 0, 00:00 is 8 and 08:00 is 16
@@ -28,9 +25,9 @@ public class EorzeanTime {
         return step2 % 100;
     }
 
-    public Consts.Weathers weatherFromUnix(Zones zone, long unix) {
+    public static Consts.Weathers weatherFromUnix(Zones zone, long unix) {
         var weatherArray = WeatherList.ByZone[zone];
-        int weatherNumber = this.unixToWeatherNumber(unix) ;
+        int weatherNumber = EorzeanTime.unixToWeatherNumber(unix) ;
         Consts.Weathers zoneWeather = Consts.Weathers.NA;
         foreach(var w in WeatherList.ByZone[zone]) {
             if (w is Weathers){
@@ -43,55 +40,55 @@ public class EorzeanTime {
         return zoneWeather;
     }
 
-    public Consts.Weathers getCurrentWeather(Zones zone){
-        return this.weatherFromUnix(zone, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+    public static Consts.Weathers getCurrentWeather(Zones zone){
+        return EorzeanTime.weatherFromUnix(zone, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
     }
 
-    public int getEorzeanHour(long unix) {
+    public static int getEorzeanHour(long unix) {
         int bell = (int)(unix / 175);
         // Do the magic 'cause for calculations 16:00 is 0, 00:00 is 8 and 08:00 is 16
         int hour = bell % 24;
         return hour;
     }
-    public int getEorzeanMinute(long unix) {
+    public static int getEorzeanMinute(long unix) {
         int secondsIntoThisEorzeanHour = (int)(unix % 175);
         double portionOfHour = (double)secondsIntoThisEorzeanHour / 175.0;
         int minutes = (int)(60.0 * portionOfHour); 
         return minutes;
     }
 
-    public string getEorzeanTime(long unix) {
-        int hour = this.getEorzeanHour(unix);
-        int minute = this.getEorzeanMinute(unix);
+    public static string getEorzeanTime(long unix) {
+        int hour = EorzeanTime.getEorzeanHour(unix);
+        int minute = EorzeanTime.getEorzeanMinute(unix);
         return hour.ToString() + ":" + (minute < 10 ? "0" : "") + minute.ToString();
     }
-    public string getCurrentEorzeanTime() {
+    public static string getCurrentEorzeanTime() {
         return getEorzeanTime(now());
     }
 
-    public long getCurrentWeatherNumber() {
+    public static long getCurrentWeatherNumber() {
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        return this.unixToWeatherNumber(now);
+        return EorzeanTime.unixToWeatherNumber(now);
     }
 
     //TODO make this a part of Conditions, makes more sense there anyways.
     //I am midly worried this will become a mess
     //TODO make it more intelligently check based off of parameters, i.e. if only weather, do increments of 8 hours on the reset line
-    public long findNextWindow(long start, Conditions condition) {
+    public static long findNextWindow(long start, Conditions condition) {
         long now = start;
         now += 175 - (now % 175); //round up to next nearest hour 
         int numRepeated = 0;
         long repeatWeathersStart = 0;
         //skip current weather/daycycle if it is the target weather
         now = condition.unixOfWindowEnd(now);
-        int bell = this.getEorzeanHour(now);
+        int bell = EorzeanTime.getEorzeanHour(now);
         
         int failsafe = 0;
         while (true){
             now += 175;
             bell += 1;
             bell = bell%24;
-            //Service.PluginLog.Verbose("Weather in " + condition.zone.ToString() + " at " + now.ToString() + " is " + this.weatherFromUnix(condition.zone, now));
+            //Service.PluginLog.Verbose("Weather in " + condition.zone.ToString() + " at " + now.ToString() + " is " + EorzeanTime.weatherFromUnix(condition.zone, now));
             failsafe += 1;
             if (failsafe >= 10000) {
                 Service.PluginLog.Warning("Next window failed to be found within " + failsafe.ToString() + " iterations");
@@ -104,7 +101,7 @@ public class EorzeanTime {
             }
 
             //check weather
-            if (condition.HasNoWeatherCondition() || condition.isThisWeatherValid(this.weatherFromUnix(condition.zone, now))) {
+            if (condition.HasNoWeatherCondition() || condition.isThisWeatherValid(EorzeanTime.weatherFromUnix(condition.zone, now))) {
                 if (condition.repeatWeathers == 0) {
                     break;
                 } else {
@@ -127,16 +124,16 @@ public class EorzeanTime {
         return now;
     }
 
-    internal long findNextWindow(Tracker tracker)
+    internal static long findNextWindow(Tracker tracker)
     {
         //Service.PluginLog.Verbose("Queue Length: " + tracker.nextWindows.Count.ToString());
         if (tracker.nextWindows.Count == 0) {
-            return this.findNextWindow(this.now() - (180 * 60), tracker.condition);
+            return EorzeanTime.findNextWindow(EorzeanTime.now() - (180 * 60), tracker.condition);
         }
-        return this.findNextWindow(tracker.lastWindow(), tracker.condition);
+        return EorzeanTime.findNextWindow(tracker.lastWindow(), tracker.condition);
     }
 
-    internal string delayToTime(long delay) {
+    internal static string delayToTime(long delay) {
         long seconds = delay % 60;
         delay /= 60;
         string sec = seconds.ToString();

@@ -23,8 +23,6 @@ namespace VTimer
         //public PluginConfiguration Configuration { get; init; }
         public WindowSystem WindowSystem = new("VTimer");
 
-        public EorzeanTime ETM = new EorzeanTime();
-
         public MainWindow MainWindow { get; init; }
 
         public Plugin(
