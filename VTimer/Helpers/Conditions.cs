@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using VTimer.Consts;
 
 namespace VTimer.Helpers;
@@ -46,5 +47,23 @@ public class Conditions {
             if (!this.isThisWeatherValid(Service.ETM.weatherFromUnix(this.zone, unix))) { return false; }
         }
         return true;
+    }
+
+    internal long unixOfWindowEnd(long unix) {
+        int bell = Service.ETM.getEorzeanHour(unix);
+        long failsafe = 0;
+        while (this.isTimeValid(unix, bell)) {
+            //Service.PluginLog.Verbose(now.ToString() + " " + bell.ToString() + " " + condition.isTimeValid(now, bell).ToString());
+            failsafe += 1;
+            if (failsafe >= 1000) {
+                Service.PluginLog.Warning("Skipping current window failed after " + failsafe.ToString() + " iterations");
+                return 0 ;
+            }
+            
+            unix += 175;
+            bell += 1;
+            bell = bell%24;
+        }
+        return unix;
     }
 }

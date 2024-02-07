@@ -96,7 +96,7 @@ namespace VTimer
                 var now = Service.ETM.now();
                 foreach (Tracker tracker in Service.Trackers) {
                     Service.PluginLog.Verbose(tracker.name + " next window: " + tracker.getNextWindowInQueue()%10000 + " now + forewarning: " + (now+tracker.getForewarning()) %10000);
-                    if (tracker.getNextWindowInQueue() < now + tracker.getForewarning() ) {
+                    if (tracker.getNextWindowInQueue() <= now + tracker.getForewarning() ) {
                         Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.getNextWindowInQueue() - now)  + " seconds");
                         tracker.notify();
                         tracker.recycle();

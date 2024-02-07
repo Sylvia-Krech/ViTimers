@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Xml;
+using ImGuiNET;
 using VTimer.Consts;
 
 
@@ -8,7 +10,8 @@ public class Tracker {
     internal string name;
     internal Conditions condition;
     internal KeyVal<string, int> forewarning;
-    internal long previousWindow;
+    internal long previousWindowStart;
+    internal long previousWindowEnd;
     internal List<long> nextWindows = new(); // TRUE time for windows, do not add forewarning.
 
     public Tracker(string n, Conditions c, ref KeyVal<string, int> fw) {
@@ -30,8 +33,8 @@ public class Tracker {
     }
 
     public long getUpcommingWindow(){
-        if (this.previousWindow > Service.ETM.now()) {
-            return this.previousWindow;
+        if (this.previousWindowStart > Service.ETM.now()) {
+            return this.previousWindowStart;
         }
         return getNextWindowInQueue();
     }
@@ -52,7 +55,8 @@ public class Tracker {
 
     public void recycle() {
         this.findAnotherWindow();
-        this.previousWindow = this.nextWindows[0];
+        this.previousWindowStart = this.nextWindows[0];
+        this.previousWindowEnd = this.condition.unixOfWindowEnd(this.getNextWindowInQueue());
         this.nextWindows.RemoveAt(0);
     }
 
@@ -61,8 +65,9 @@ public class Tracker {
     }
 
     private long getGap(){
-        return this.getNextWindowInQueue() - this.previousWindow;
+        return this.getNextWindowInQueue() - this.previousWindowStart;
     }
+
     public void notify() {
         string output = "[VTimer] " + this.name + " is up" + (this.getForewarning() == 0 ? "." : " in " + (this.getNextWindowInQueue() - Service.ETM.now()) + " seconds.");
         if (this.forewarning.Key == "Eureka") {
@@ -72,5 +77,16 @@ public class Tracker {
             } 
         }
         Service.Chat.Print(output);
+    }
+
+    public void isUpNextInText() {
+        string output = this.name;
+        if (this.previousWindowEnd < Service.ETM.now()){
+            output += " is up next in " + Service.ETM.delayToTime(this.getUpcommingWindow() - Service.ETM.now());
+            ImGui.TextColored(ConstantVars.CurrentlyDownColor, output);
+        } else {
+            output += " is up now, for " + Service.ETM.delayToTime(this.previousWindowEnd - Service.ETM.now());
+            ImGui.TextColored(ConstantVars.CurrentlyUpColor, output);
+        }
     }
 }

@@ -78,24 +78,13 @@ public class EorzeanTimeManager {
     public long findNextWindow(long start, Conditions condition) {
         long now = start;
         now += 175 - (now % 175); //round up to next nearest hour 
-        int bell = this.getEorzeanHour(now);
         int numRepeated = 0;
         long repeatWeathersStart = 0;
-        int failsafe = 0;
         //skip current weather/daycycle if it is the target weather
-        while (condition.isTimeValid(now, bell)) {
-            //Service.PluginLog.Verbose(now.ToString() + " " + bell.ToString() + " " + condition.isTimeValid(now, bell).ToString());
-            failsafe += 1;
-            if (failsafe >= 1000) {
-                Service.PluginLog.Warning("Skipping current window failed after " + failsafe.ToString() + " iterations");
-                return 0 ;
-            }
-            
-            now += 175;
-            bell += 1;
-            bell = bell%24;
-        }
-
+        now = condition.unixOfWindowEnd(now);
+        int bell = this.getEorzeanHour(now);
+        
+        int failsafe = 0;
         while (true){
             now += 175;
             bell += 1;
