@@ -162,7 +162,9 @@ class Presets {
 }
 
 class ConstantVars {
-  internal static System.Numerics.Vector4 CurrentlyUpColor = new(0.0f, 1.0f, 0.0f, 1.0f);
-  internal static System.Numerics.Vector4 CurrentlyDownColor = new(1.0f, 0.0f, 0.0f, 1.0f);
+  internal static readonly System.Numerics.Vector4 CurrentlyUpColor = new(0.0f, 1.0f, 0.0f, 1.0f);
+
+  internal static readonly System.Numerics.Vector4 UpSoonColor = new(1.0f, 1.0f, 0.0f, 1.0f);
+  internal static readonly System.Numerics.Vector4 CurrentlyDownColor = new(1.0f, 0.0f, 0.0f, 1.0f);
 }
 

@@ -67,73 +67,11 @@ public static class EorzeanTime {
     }
 
     public static long getCurrentWeatherNumber() {
-        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        long now = EorzeanTime.now();
         return EorzeanTime.unixToWeatherNumber(now);
     }
 
-    //TODO make this a part of Conditions, makes more sense there anyways.
-    //I am midly worried this will become a mess
-    //TODO make it more intelligently check based off of parameters, i.e. if only weather, do increments of 8 hours on the reset line
-    public static long findNextWindow(long start, Conditions condition) {
-        long now = start;
-        now += 175 - (now % 175); //round up to next nearest hour 
-        int numRepeated = 0;
-        long repeatWeathersStart = 0;
-        //skip current weather/daycycle if it is the target weather
-        now = condition.unixOfWindowEnd(now);
-        int bell = EorzeanTime.getEorzeanHour(now);
-        
-        int failsafe = 0;
-        while (true){
-            now += 175;
-            bell += 1;
-            bell = bell%24;
-            //Service.PluginLog.Verbose("Weather in " + condition.zone.ToString() + " at " + now.ToString() + " is " + EorzeanTime.weatherFromUnix(condition.zone, now));
-            failsafe += 1;
-            if (failsafe >= 10000) {
-                Service.PluginLog.Warning("Next window failed to be found within " + failsafe.ToString() + " iterations");
-                return 0 ;
-            }
-            
-            // check day
-            if (!condition.isBellWithinDayCycle(bell)){
-                continue;
-            }
-
-            //check weather
-            if (condition.HasNoWeatherCondition() || condition.isThisWeatherValid(EorzeanTime.weatherFromUnix(condition.zone, now))) {
-                if (condition.repeatWeathers == 0) {
-                    break;
-                } else {
-                    if (numRepeated == 0) {
-                        repeatWeathersStart = now;
-                    }
-                    numRepeated += 1;
-                    if (numRepeated == condition.repeatWeathers) {
-                        break;
-                    }
-                    continue; //to bypass the reset below
-                }
-            }
-            numRepeated = 0; //maybe move into an else?
-        }
-
-        if (condition.repeatWeathers != 0) {
-            return repeatWeathersStart;
-        }
-        return now;
-    }
-
-    internal static long findNextWindow(Tracker tracker)
-    {
-        //Service.PluginLog.Verbose("Queue Length: " + tracker.nextWindows.Count.ToString());
-        if (tracker.nextWindows.Count == 0) {
-            return EorzeanTime.findNextWindow(EorzeanTime.now() - (180 * 60), tracker.condition);
-        }
-        return EorzeanTime.findNextWindow(tracker.lastWindow(), tracker.condition);
-    }
-
-    internal static string delayToTime(long delay) {
+    internal static string delayToTimeText(long delay) {
         long seconds = delay % 60;
         delay /= 60;
         string sec = seconds.ToString();

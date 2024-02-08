@@ -10,6 +10,7 @@ namespace VTimer;
 
 internal class Service
 {
+    internal static readonly string Version = "v0.0.0.2";
     internal static Plugin Plugin { get; set; } = null!;
     //internal static PluginWindow PluginUi { get; set; } = null!;
     //internal static SettingsWindow SettingsUi { get; set; } = null!;

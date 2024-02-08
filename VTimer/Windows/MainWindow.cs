@@ -3,6 +3,7 @@ using System.Numerics;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
+using VTimer.Helpers;
 
 namespace VTimer.Windows;
 
@@ -17,7 +18,7 @@ public class MainWindow : Window, IDisposable
     private Plugin Plugin;
 
     public MainWindow(Plugin plugin) : base(
-        "VTimer Configuration") //ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        "VTimer Configuration, Version: " + Service.Version) //ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         this.SizeConstraints = new WindowSizeConstraints
         {
@@ -38,7 +39,7 @@ public class MainWindow : Window, IDisposable
         if (ImGui.BeginTabBar("MyTabBar"))
         {
             if (ImGui.BeginTabItem("Main")) {
-                ImGui.Text($"It is {this.EorzeanTime.getCurrentEorzeanTime()}");
+                ImGui.Text($"It is {EorzeanTime.getCurrentEorzeanTime()}");
                 CurrentTimers.Draw(this.Plugin);
                 ImGui.EndTabItem();
             }

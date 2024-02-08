@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using ImGuiNET;
 using VTimer.Consts;
@@ -7,6 +8,7 @@ using VTimer.Consts;
 namespace VTimer.Helpers;
 
 public class Tracker {
+    internal static long backSearch = 180 * 60;
     internal string name;
     internal Conditions condition;
     internal KeyVal<string, int> forewarning;
@@ -28,8 +30,16 @@ public class Tracker {
     public Tracker(string n, Consts.Zones z, Consts.Weathers w, Consts.dayCycle dc, int rw, ref KeyVal<string, int> fw)
         : this(n, new Conditions(z, new List<Weathers>{w}, dc, rw), ref fw){}
 
+
+    public bool hasWindowInQueue(){
+        return nextWindows.Count != 0;
+    }
     public long getNextWindowInQueue(){
-        return nextWindows[0];
+        return nextWindows.First();
+    }
+
+    public long getLastWindowInQueue(){
+        return nextWindows.Last();
     }
 
     public long getUpcommingWindow(){
@@ -44,7 +54,12 @@ public class Tracker {
     }
 
     public void findAnotherWindow(){
-        var time = EorzeanTime.findNextWindow(this);
+        long time = 0;
+        if (this.hasWindowInQueue()){
+            time = condition.findNextWindow(this.getUpcommingWindow());
+        } else {
+            time = condition.findNextWindow(EorzeanTime.now() - backSearch);
+        }
         nextWindows.Add(time);
         if (time > EorzeanTime.now()) {
             Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time - EorzeanTime.now()).ToString() + " seconds." +
@@ -80,12 +95,16 @@ public class Tracker {
     }
 
     public void isUpNextInText() {
+        //Service.PluginLog.Verbose("Attempting to draw " + this.name + "'s timer to the screen");
         string output = this.name;
         if (this.previousWindowEnd < EorzeanTime.now()){
-            output += " is up next in " + EorzeanTime.delayToTime(this.getUpcommingWindow() - EorzeanTime.now());
+            output += " is up next in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
             ImGui.TextColored(ConstantVars.CurrentlyDownColor, output);
+        } else if (this.previousWindowStart > EorzeanTime.now()) {
+            output += " is up soon, in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
+            ImGui.TextColored(ConstantVars.UpSoonColor, output);
         } else {
-            output += " is up now, for " + EorzeanTime.delayToTime(this.previousWindowEnd - EorzeanTime.now());
+            output += " is up now, for " + EorzeanTime.delayToTimeText(this.previousWindowEnd - EorzeanTime.now());
             ImGui.TextColored(ConstantVars.CurrentlyUpColor, output);
         }
     }
