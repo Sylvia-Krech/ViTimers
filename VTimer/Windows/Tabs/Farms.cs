@@ -13,10 +13,11 @@ public class Farms {
         }
 
         ImGui.Text($"Minimum number of connected windows:");
-        var repeatWindows = Service.Configuration.FarmMinDuration.Value;
+        var repeatWindows = Service.Configuration.FarmMinDuration.Value/8;
         ImGui.InputInt("", ref repeatWindows, 1, 1); 
-        if (repeatWindows != Service.Configuration.FarmMinDuration.Value && repeatWindows >= 0 && repeatWindows <= 5){
-            Service.Configuration.FarmMinDuration.Value = repeatWindows;
+        repeatWindows = System.Math.Clamp(repeatWindows, 0, 5);
+        if (repeatWindows*8 != Service.Configuration.FarmMinDuration.Value){
+            Service.Configuration.FarmMinDuration.Value = repeatWindows*8;
             Service.Configuration.Save();
         }
 

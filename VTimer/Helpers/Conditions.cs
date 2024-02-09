@@ -69,7 +69,7 @@ public class Conditions {
 
     //I am midly worried this will become a mess
     //TODO make it more intelligently check based off of parameters, i.e. if only weather, do increments of 8 hours on the reset line
-    public long findNextWindow(long start) {
+    public (long, long) findNextWindow(long start) {
         long now = start;
         now += 175 - (now % 175); //round up to next nearest hour 
         //skip current weather/daycycle if it is the target weather
@@ -85,7 +85,7 @@ public class Conditions {
             failsafe += 1;
             if (failsafe >= 10000) {
                 Service.PluginLog.Warning("Next window failed to be found within " + failsafe.ToString() + " iterations");
-                return 0 ;
+                return (0,0) ;
             }
             
             // check day
@@ -99,15 +99,7 @@ public class Conditions {
                 break;
             }
         }
-        return now;
-    }
-
-    internal long findNextWindow(Tracker tracker)
-    {
-        //Service.PluginLog.Verbose("Queue Length: " + tracker.nextWindows.Count.ToString());
-        if (tracker.hasWindowInQueue()) {
-            return this.findNextWindow(EorzeanTime.now() - (180 * 60));
-        }
-        return this.findNextWindow(tracker.lastWindow());
+        long end = unixOfWindowEnd(now);
+        return (now, end);
     }
 }

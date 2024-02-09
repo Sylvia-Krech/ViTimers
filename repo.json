@@ -6,7 +6,7 @@
       "InternalName": "VTimer",
       "AssemblyVersion": "0.0.0.1",
       "TestingAssemblyVersion": "0.0.0.1",
-      "RepoUrl": "https://github.com/Sylvia-Krech/ViTimers",
+      "RepoUrl": "https://github.com/SylviaSK/VTimer",
       "ApplicableVersion": "any",
       "DalamudApiLevel": 9,
       "IsHide": "False",
@@ -16,10 +16,10 @@
       "LoadPriority": 99999,
       "LoadRequiredState": 2,
       "LoadSync": true,
-      "DownloadLinkInstall": "https://github.com/Sylvia-Krech/ViTimers/releases/download/v0.0.0.1/latest.zip",
-      "DownloadLinkTesting": "https://github.com/Sylvia-Krech/ViTimers/releases/download/v0.0.0.1/latest.zip",
-      "DownloadLinkUpdate": "https://github.com/Sylvia-Krech/ViTimers/releases/download/v0.0.0.1/latest.zip",
-      "IconUrl": "https://raw.githubusercontent.com/Sylvia-Krech/ViTimers/master/Data/VTimer.png",
+      "DownloadLinkInstall": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.0.1/latest.zip",
+      "DownloadLinkTesting": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.0.1/latest.zip",
+      "DownloadLinkUpdate": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.0.1/latest.zip",
+      "IconUrl": "https://raw.githubusercontent.com/SylviaSK/VTimer/master/Data/VTimer.png",
       "Tags": [
         "Timers"
       ]

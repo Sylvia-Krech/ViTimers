@@ -87,15 +87,16 @@ namespace VTimer
             MainWindow.IsOpen = true;
         }
 
-        //Core part of the program, runs every frame to my understanding.
+        //TODO defer adding up to some constant number of windows to each active tracker over the course of several frames to reduce chance of stuttering
+        //  while also enabling the option for future development of a "upcomming best windows" type of thing, especially useful for farms.
         public void onUpdate(IFramework framework) {
             counter += 1;
             if (counter % 60 == 0) {
                 var now = EorzeanTime.now();
                 foreach (Tracker tracker in Service.Trackers) {
                     //Service.PluginLog.Verbose(tracker.name + " next window: " + tracker.getNextWindowInQueue()%10000 + " now + forewarning: " + (now+tracker.getForewarning()) %10000);
-                    if (tracker.firstWindow() <= now + tracker.getForewarning() ) {
-                        Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.firstWindow() - now)  + " seconds");
+                    if (tracker.startOfFirstWindow() <= now + tracker.getForewarning() ) {
+                        Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.startOfFirstWindow() - now)  + " seconds");
                         tracker.notify();
                         tracker.recycle();
                     }

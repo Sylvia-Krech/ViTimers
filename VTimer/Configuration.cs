@@ -10,9 +10,11 @@ namespace VTimer
     [Serializable]
     public class PluginConfiguration : IPluginConfiguration
     {
-        // Anything that will be saved to the config file must be public, not internal.
+        // this version that I have no intent of using is required for extending IPluginConfiguration
         public int Version { get; set; } = 0;
 
+
+        // Anything that will be saved to the config file must be public, not internal.
         public Val<int> EurekaForewarning = new(180);
         public Val<int> FarmForewarning = new(180);
         // In Eorzean Hours
