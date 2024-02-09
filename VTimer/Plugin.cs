@@ -55,7 +55,7 @@ namespace VTimer
             this.PluginInterface.UiBuilder.Draw += DrawUI;
             this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
-            Consts.PresetTimers.LoadTimers();
+            Helpers.PresetTimers.LoadTimers();
 
             Service.Framework.Update += onUpdate;
         }
@@ -94,8 +94,8 @@ namespace VTimer
                 var now = EorzeanTime.now();
                 foreach (Tracker tracker in Service.Trackers) {
                     //Service.PluginLog.Verbose(tracker.name + " next window: " + tracker.getNextWindowInQueue()%10000 + " now + forewarning: " + (now+tracker.getForewarning()) %10000);
-                    if (tracker.getNextWindowInQueue() <= now + tracker.getForewarning() ) {
-                        Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.getNextWindowInQueue() - now)  + " seconds");
+                    if (tracker.firstWindow() <= now + tracker.getForewarning() ) {
+                        Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.firstWindow() - now)  + " seconds");
                         tracker.notify();
                         tracker.recycle();
                     }

@@ -7,12 +7,11 @@ public class Conditions {
     internal Zones zone;
     internal dayCycle dayCycle;
     internal List<Weathers> weathers;
-    internal int repeatWeathers;
-    public Conditions (Zones z, List<Weathers> w, dayCycle dc, int rw){
+    internal List<Weathers> requiredPreviousWeather = new();
+    public Conditions (Zones z, List<Weathers> w, dayCycle dc){
         this.zone = z;
         this.dayCycle = dc;
         this.weathers = w;
-        this.repeatWeathers = rw;
     }
 
     internal bool HasNoWeatherCondition()
@@ -73,8 +72,6 @@ public class Conditions {
     public long findNextWindow(long start) {
         long now = start;
         now += 175 - (now % 175); //round up to next nearest hour 
-        int numRepeated = 0;
-        long repeatWeathersStart = 0;
         //skip current weather/daycycle if it is the target weather
         now = this.unixOfWindowEnd(now);
         int bell = EorzeanTime.getEorzeanHour(now);
@@ -96,26 +93,11 @@ public class Conditions {
                 continue;
             }
 
+            // TODO add previous weather requirement support
             //check weather
             if (this.HasNoWeatherCondition() || this.isThisWeatherValid(EorzeanTime.weatherFromUnix(this.zone, now))) {
-                if (this.repeatWeathers == 0) {
-                    break;
-                } else {
-                    if (numRepeated == 0) {
-                        repeatWeathersStart = now;
-                    }
-                    numRepeated += 1;
-                    if (numRepeated == this.repeatWeathers) {
-                        break;
-                    }
-                    continue; //to bypass the reset below
-                }
+                break;
             }
-            numRepeated = 0; //maybe move into an else?
-        }
-
-        if (this.repeatWeathers != 0) {
-            return repeatWeathersStart;
         }
         return now;
     }
@@ -123,7 +105,7 @@ public class Conditions {
     internal long findNextWindow(Tracker tracker)
     {
         //Service.PluginLog.Verbose("Queue Length: " + tracker.nextWindows.Count.ToString());
-        if (tracker.nextWindows.Count == 0) {
+        if (tracker.hasWindowInQueue()) {
             return this.findNextWindow(EorzeanTime.now() - (180 * 60));
         }
         return this.findNextWindow(tracker.lastWindow());

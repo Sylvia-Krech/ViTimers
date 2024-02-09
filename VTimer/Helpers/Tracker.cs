@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Xml;
 using ImGuiNET;
 using VTimer.Consts;
@@ -11,34 +12,35 @@ public class Tracker {
     internal static long backSearch = 180 * 60;
     internal string name;
     internal Conditions condition;
-    internal KeyVal<string, int> forewarning;
     internal long previousWindowStart;
+    internal readonly Val<int> forewarning;
+    internal readonly Val<int> minDuration; 
     internal long previousWindowEnd;
-    internal List<long> nextWindows = new(); // TRUE time for windows, do not add forewarning.
+    private List<long> nextWindows = new(); // TRUE time for windows, do not add forewarning.
 
-    public Tracker(string n, Conditions c, ref KeyVal<string, int> fw) {
+    public Tracker(string n, Conditions c, Val<int> minDur, Val<int> fw) {
         this.name = n;
         this.condition = c;
         this.forewarning = fw;
+        this.minDuration = minDur;
         this.findAnotherWindow();
-        while (this.getNextWindowInQueue() < EorzeanTime.now()) {
+        while (this.firstWindow() < EorzeanTime.now()) {
             this.recycle();
         }
-        Service.PluginLog.Verbose(name + " Finalized, it is up in " + (this.getNextWindowInQueue() - EorzeanTime.now()).ToString() + " seconds.");
+        Service.PluginLog.Verbose(name + " Finalized, it is up in " + (this.firstWindow() - EorzeanTime.now()).ToString() + " seconds.");
     }
 
-    public Tracker(string n, Consts.Zones z, Consts.Weathers w, Consts.dayCycle dc, int rw, ref KeyVal<string, int> fw)
-        : this(n, new Conditions(z, new List<Weathers>{w}, dc, rw), ref fw){}
+    public Tracker(string n, Consts.Zones z, Consts.Weathers w, Consts.dayCycle dc, ref Val<int> dur, ref Val<int> fw)
+        : this(n, new Conditions(z, new List<Weathers>{w}, dc), dur, fw){}
 
 
     public bool hasWindowInQueue(){
         return nextWindows.Count != 0;
     }
-    public long getNextWindowInQueue(){
+    public long firstWindow(){
         return nextWindows.First();
     }
-
-    public long getLastWindowInQueue(){
+    public long lastWindow() {
         return nextWindows.Last();
     }
 
@@ -46,32 +48,34 @@ public class Tracker {
         if (this.previousWindowStart > EorzeanTime.now()) {
             return this.previousWindowStart;
         }
-        return getNextWindowInQueue();
+        return firstWindow();
     }
 
-    public long lastWindow() {
-        return nextWindows[nextWindows.Count -1];
-    }
 
     public void findAnotherWindow(){
         long time = 0;
         if (this.hasWindowInQueue()){
-            time = condition.findNextWindow(this.getUpcommingWindow());
+            time = condition.findNextWindow(this.lastWindow());
         } else {
             time = condition.findNextWindow(EorzeanTime.now() - backSearch);
         }
+
+        if (time == 0) { 
+            Service.PluginLog.Warning("Window for " + this.name + " failed to be found, are you sure that the settings for it are correct?");
+            return;
+        } 
+
         nextWindows.Add(time);
         if (time > EorzeanTime.now()) {
             Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time - EorzeanTime.now()).ToString() + " seconds." +
             " At " + EorzeanTime.getEorzeanTime(time) + "ET");
         }
-
     }
 
     public void recycle() {
         this.findAnotherWindow();
         this.previousWindowStart = this.nextWindows[0];
-        this.previousWindowEnd = this.condition.unixOfWindowEnd(this.getNextWindowInQueue());
+        this.previousWindowEnd = this.condition.unixOfWindowEnd(this.firstWindow());
         this.nextWindows.RemoveAt(0);
     }
 
@@ -80,12 +84,12 @@ public class Tracker {
     }
 
     private long getGap(){
-        return this.getNextWindowInQueue() - this.previousWindowStart;
+        return this.firstWindow() - this.previousWindowEnd;
     }
 
     public void notify() {
-        string output = "[VTimer] " + this.name + " is up" + (this.getForewarning() == 0 ? "." : " in " + (this.getNextWindowInQueue() - EorzeanTime.now()) + " seconds.");
-        if (this.forewarning.Key == "Eureka") {
+        string output = "[VTimer] " + this.name + " is up" + (this.getForewarning() == 0 ? "." : " in " + (this.firstWindow() - EorzeanTime.now()) + " seconds.");
+        if (Groups.EurekaNMs.Contains(this.name)) {
             long minutesAgo = (this.getGap() + 1) / 61;
             if (minutesAgo < 180){
                 output += " It was last up " + minutesAgo + " minutes ago, it may not spawn if the oldest person in instance has <" + (180 - minutesAgo) + " mins remaining";
@@ -99,13 +103,13 @@ public class Tracker {
         string output = this.name;
         if (this.previousWindowEnd < EorzeanTime.now()){
             output += " is up next in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
-            ImGui.TextColored(ConstantVars.CurrentlyDownColor, output);
+            ImGui.TextColored(Colors.CurrentlyDown, output);
         } else if (this.previousWindowStart > EorzeanTime.now()) {
             output += " is up soon, in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
-            ImGui.TextColored(ConstantVars.UpSoonColor, output);
+            ImGui.TextColored(Colors.UpSoon, output);
         } else {
             output += " is up now, for " + EorzeanTime.delayToTimeText(this.previousWindowEnd - EorzeanTime.now());
-            ImGui.TextColored(ConstantVars.CurrentlyUpColor, output);
+            ImGui.TextColored(Colors.CurrentlyUp, output);
         }
     }
 }

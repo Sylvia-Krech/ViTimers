@@ -1,56 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
-using VTimer.Helpers;
+using VTimer.Consts;
 
-namespace VTimer.Consts;
+namespace VTimer.Helpers;
 
 class PresetTimers {
     public static void LoadTimers() {
         Service.PluginLog.Verbose("Loading Preset Timers");
-        //TODO add support for only garunteed spawns
-        if (Service.Configuration.Pazuzu) {
-            Service.PluginLog.Verbose("Attempting to add Paz");
-            PresetTimers.AddTimer("Pazuzu", ref Service.Configuration.EurekaForewarning);
-        }
-        if (Service.Configuration.Crab) {
-            Service.PluginLog.Verbose("Attempting to add Crab");
-            PresetTimers.AddTimer("Crab", ref Service.Configuration.EurekaForewarning);
-        }
-        if (Service.Configuration.Cassie) {
-            Service.PluginLog.Verbose("Attempting to add Cassie");
-            PresetTimers.AddTimer("Cassie", ref Service.Configuration.EurekaForewarning);
-        }
-        if (Service.Configuration.Luigi) {
-            Service.PluginLog.Verbose("Attempting to add Luigi");
-            PresetTimers.AddTimer("Luigi", ref Service.Configuration.EurekaForewarning);
-        }
-        if (Service.Configuration.Skoll) {
-            Service.PluginLog.Verbose("Attempting to add Skoll");
-            PresetTimers.AddTimer("Skoll", ref Service.Configuration.EurekaForewarning);
-        }
-        if (Service.Configuration.Penny) {
-            Service.PluginLog.Verbose("Attempting to add Penny");
-            PresetTimers.AddTimer("Penny", ref Service.Configuration.EurekaForewarning);
-        }
-    }
-    public static void AddOrRemoveTimer(string name, ref KeyVal<string, int> forewarning){
-        if (!doesTrackerExist(name)) {
-            AddTimer(name, ref forewarning);
-        } else {
-            removeTracker(name);
-        }
-    }
-    public static void AddTimer(string name, ref KeyVal<string, int> forewarning){
-        //{"Luigi", new ArrayList() {Zones.EurekaPagos, Weathers.NA, dayCycle.Night, 0, Service.Configuration.EurekaPreWarn} }
-        if (!doesTrackerExist(name)) {
-            var condition = Presets.Timers[name];
-            Service.Trackers.Add(new Tracker(name, condition, ref forewarning));
-        } else {
-            Service.PluginLog.Warning("Attempted to call AddTimer when a timer of the same name already exists");
+        foreach (KeyValuePair<string,bool> state in Service.Configuration.TrackerState) {
+            if (state.Value) {
+                Service.PluginLog.Verbose("Attempting to add " + state.Key);
+                PresetTimers.AddTimer(state.Key, Numbers.ZeroVal, Service.Configuration.EurekaForewarning);
+            }
         }
     }
 
-    public static bool doesTrackerExist(string name) {
+    public static bool trackerExists(string name) {
         for (int i = 0; i < Service.Trackers.Count; ++i) {
             if (Service.Trackers[i].name == name) {
                 return true;
@@ -58,12 +23,32 @@ class PresetTimers {
         }
         return false;
     }
+
+    public static void AddOrRemoveTimer(string name, Val<int> minimumDuration, Val<int> forewarning){
+        if (!trackerExists(name)) {
+            AddTimer(name, minimumDuration, forewarning);
+        } else {
+            removeTracker(name);
+        }
+    }
+    public static void AddTimer(string name, Val<int> minDuration, Val<int> forewarning){
+        if (!trackerExists(name)) {
+            var condition = Presets.Conditions[name];
+            Service.Trackers.Add(new Tracker(name, condition, minDuration, forewarning));
+        } else {
+            Service.PluginLog.Warning("Attempted to call AddTimer when a timer of the same name already exists");
+        }
+    }
+
+
     public static void removeTracker(string name) {
-        for (int i = 0; i < Service.Trackers.Count; ++i) {
-            if (Service.Trackers[i].name == name) {
-                Service.Trackers.RemoveAt(i);
-                Service.PluginLog.Verbose("Removed Tracker:" + name);
-                return;
+        if (trackerExists(name)) {
+            for (int i = 0; i < Service.Trackers.Count; ++i) {
+                if (Service.Trackers[i].name == name) {
+                    Service.Trackers.RemoveAt(i);
+                    Service.PluginLog.Verbose("Removed Tracker:" + name);
+                    return;
+                }
             }
         }
     }

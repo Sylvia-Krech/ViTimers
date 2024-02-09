@@ -10,7 +10,7 @@ namespace VTimer;
 
 internal class Service
 {
-    internal static readonly string Version = "v0.0.0.2";
+    internal static readonly string Version = "v0.1";
     internal static Plugin Plugin { get; set; } = null!;
     //internal static PluginWindow PluginUi { get; set; } = null!;
     //internal static SettingsWindow SettingsUi { get; set; } = null!;
@@ -19,6 +19,7 @@ internal class Service
     //internal static Ipc Ipc { get; set; } = null!;
 
     internal static List<Tracker> Trackers { get; set; } = new();
+    internal static List<Tracker> CustomTrackers { get; set; } = new();
 
 
     [PluginService] public static IFramework Framework { get; set; } = null!;

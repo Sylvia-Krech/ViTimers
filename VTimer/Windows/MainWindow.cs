@@ -22,7 +22,7 @@ public class MainWindow : Window, IDisposable
     {
         this.SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(375, 330),
+            MinimumSize = new Vector2(200, 200),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
@@ -36,21 +36,26 @@ public class MainWindow : Window, IDisposable
     public override void Draw()
     {
         //ImGui.Spacing();
-        if (ImGui.BeginTabBar("MyTabBar"))
+        if (ImGui.BeginTabBar("ConfigBar"))
         {
             if (ImGui.BeginTabItem("Main")) {
                 ImGui.Text($"It is {EorzeanTime.getCurrentEorzeanTime()}");
-                CurrentTimers.Draw(this.Plugin);
+                CurrentTimers.Draw();
                 ImGui.EndTabItem();
             }
             if (ImGui.BeginTabItem("Eureka")) {
-                Eureka.Draw(this.Plugin);
+                Eureka.Draw();
+                ImGui.EndTabItem();
+            }            
+            if (ImGui.BeginTabItem("Farms")) {
+                Farms.Draw();
                 ImGui.EndTabItem();
             }
             if (ImGui.BeginTabItem("Weather")) {
-                Weather.Draw(this.Plugin);
+                Weather.Draw();
                 ImGui.EndTabItem();
             }
+            
             ImGui.EndTabBar();
         }
 

@@ -10,7 +10,7 @@ using VTimer.Helpers;
 namespace VTimer.Windows;
 
 public class Weather {
-    public static void Draw(Plugin plugin) {
+    public static void Draw() {
         var weatherNumber = EorzeanTime.getCurrentWeatherNumber();
         //ImGui.Text($"Current Timestamp: {EorzeanTime.startTime}");
         ImGui.Text($"The current weather # is: {weatherNumber}");

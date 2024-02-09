@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.GeneratedSheets2;
 using VTimer.Helpers;
 
 // Weather data taken from https://github.com/Asvel/ffxiv-weather/blob/master/src/Weather.ts
@@ -68,7 +71,7 @@ public enum dayCycle {
 // My only excuse is that I am new to c# and just want this thing to run without fighting io handlers.
 class WeatherList
 {
-  public static Dictionary<Zones, ArrayList> ByZone = new Dictionary<Zones, ArrayList> {
+  public static readonly Dictionary<Zones, ArrayList> ByZone = new Dictionary<Zones, ArrayList> {
     {Zones.LimsaLominsa, new ArrayList() {Weathers.Clouds, 20, Weathers.ClearSkies, 50, Weathers.FairSkies, 80, Weathers.Fog, 90, Weathers.Rain} },
     {Zones.MiddleLaNoscea, new ArrayList() {Weathers.Clouds, 20, Weathers.ClearSkies, 50, Weathers.FairSkies, 70, Weathers.Wind, 80, Weathers.Fog, 90, Weathers.Rain} },
     {Zones.LowerLaNoscea, new ArrayList() {Weathers.Clouds, 20, Weathers.ClearSkies, 50, Weathers.FairSkies, 70, Weathers.Wind, 80, Weathers.Fog, 90, Weathers.Rain} },
@@ -135,36 +138,65 @@ class WeatherList
     {Zones.UltimaThule, new ArrayList() {Weathers.AstromagneticStorm, 15, Weathers.FairSkies, 85, Weathers.UmbralWind} },
     {Zones.UnnamedIsland, new ArrayList() {Weathers.ClearSkies, 25, Weathers.FairSkies, 70, Weathers.Clouds, 80, Weathers.Rain, 90, Weathers.Fog, 95, Weathers.Showers} },
   };
-/*
-  public Dictionary<string, ArrayList> byZone = new Dictionary<string, ArrayList> {
-    {"Limsa Lominsa", new ArrayList() {weathers.Clouds, 20, weathers.ClearSkies, 50, weathers.FairSkies, 80, weathers.Fog, 90, weathers.Rain} },
-  };
-  */
+}
+internal class Numbers {
+  internal static readonly int Zero = 0;
+  internal static Val<int> ZeroVal = new(0);
 }
 
 class Presets {
-  public static Dictionary<string, Conditions> Timers= new Dictionary<string, Conditions> {
+  public static readonly Dictionary<string, Conditions> Conditions = new Dictionary<string, Conditions> {
     // Eureka
-    {"Pazuzu", new Conditions(Zones.EurekaAnemos, new List<Weathers>{Weathers.Gales}, dayCycle.Night, 0) },
-    {"Crab", new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Fog}, dayCycle.NA, 0) },
-    {"Cassie", new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Blizzards}, dayCycle.NA, 0) },
-    {"Skoll", new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.Blizzards}, dayCycle.NA, 0) },
-    {"Penny", new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.HeatWaves}, dayCycle.NA, 0) },
-    {"Luigi", new Conditions(Zones.EurekaPagos, new List<Weathers>{}, dayCycle.Night, 0) },
+    {Names.Pazuzu, new Conditions(Zones.EurekaAnemos, new List<Weathers>{Weathers.Gales}, dayCycle.Night) },
+    {Names.Crab, new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Fog}, dayCycle.NA) },
+    {Names.Cassie, new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Blizzards}, dayCycle.NA) },
+    {Names.Skoll, new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.Blizzards}, dayCycle.NA) },
+    {Names.Penny, new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.HeatWaves}, dayCycle.NA) },
+    {Names.Luigi, new Conditions(Zones.EurekaPagos, new List<Weathers>{}, dayCycle.Night) },
 
-    //Bozja
-    {"Preperation", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Thunder}, dayCycle.NA, 0) },
-    {"Care", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.DustStorms}, dayCycle.NA, 0) },
-    {"Support", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales}, dayCycle.NA, 0) },
-    {"History", new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Gales, Weathers.Snow}, dayCycle.NA, 0) },
-    {"Artistry", new Conditions(Zones.Zadnor, new List<Weathers>{Weathers.Thunder, Weathers.Rain}, dayCycle.NA, 0) },
+    //Farms
+    // Cold box has 3 different weathers, but they're all for different mobs
+    //  TODO consider seperating cold box into different toggles to add weathers to allow people to customize to their perfered mobs, and willingness
+    //  to move around the zone during a farm
+    {Names.ColdBox, new Conditions(Zones.EurekaPagos, new List<Weathers>{Weathers.Blizzards, Weathers.FairSkies, Weathers.Thunder}, dayCycle.NA) },
+    {Names.HeatBox, new Conditions(Zones.EurekaPyros, new List<Weathers>{Weathers.UmbralWind}, dayCycle.NA) },
+    {Names.Preparation, new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Thunder}, dayCycle.NA) },
+    {Names.Care, new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Wind, Weathers.DustStorms}, dayCycle.NA) },
+    {Names.Support, new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Wind}, dayCycle.NA) },
+    {Names.History, new Conditions(Zones.BozjanSouthernFront, new List<Weathers>{Weathers.Wind}, dayCycle.NA) },
+    //History is also available in Zadnor during Snow, but that is a headache, and most of the rest are in BSF anyways, and snow doesnt overlap with Artistry, so :shrug:
+    {Names.Artistry, new Conditions(Zones.Zadnor, new List<Weathers>{Weathers.Thunder, Weathers.Rain}, dayCycle.NA) },
   };
 }
 
-class ConstantVars {
-  internal static readonly System.Numerics.Vector4 CurrentlyUpColor = new(0.0f, 1.0f, 0.0f, 1.0f);
+//tbh this should probably be an enum :\
+class Names{
+  internal static readonly string Pazuzu = "Pazuzu";
+  internal static readonly string Crab = "Crab";
+  internal static readonly string Cassie = "Cassie";
+  internal static readonly string Skoll = "Skoll";
+  internal static readonly string Penny = "Penny";
+  internal static readonly string Luigi = "Luigi";
 
-  internal static readonly System.Numerics.Vector4 UpSoonColor = new(1.0f, 1.0f, 0.0f, 1.0f);
-  internal static readonly System.Numerics.Vector4 CurrentlyDownColor = new(1.0f, 0.0f, 0.0f, 1.0f);
+  internal static readonly string ColdBox = "Cold Box";
+  internal static readonly string HeatBox = "Heat Box";
+  internal static readonly string Preparation = "Preparation";
+  internal static readonly string Care = "Care";
+  internal static readonly string Support = "Support";
+  internal static readonly string History = "History";
+  internal static readonly string Artistry = "Artistry";
+
+}
+
+class Groups {
+  internal static readonly List<string> EurekaNMs = new List<string> {Names.Pazuzu, Names.Crab, Names.Cassie, Names.Skoll, Names.Penny, Names.Luigi};
+  internal static readonly List<string> Farms = new List<string> {Names.Preparation, Names.Care, Names.Support, Names.History, Names.Artistry};
+}
+
+class Colors {
+  internal static readonly System.Numerics.Vector4 CurrentlyUp = new(0.0f, 1.0f, 0.0f, 1.0f);
+
+  internal static readonly System.Numerics.Vector4 UpSoon = new(1.0f, 1.0f, 0.0f, 1.0f);
+  internal static readonly System.Numerics.Vector4 CurrentlyDown = new(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
