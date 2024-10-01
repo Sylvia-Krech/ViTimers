@@ -1,3 +1,4 @@
+using System;
 using ImGuiNET;
 using VTimer.Helpers;
 namespace VTimer.Windows;
@@ -12,4 +13,13 @@ class DrawTools {
         }
     }
 
+
+    public static void DrawWindowPair(Timestamp timestamp) {
+        string localTime = DateTimeOffset.FromUnixTimeSeconds(timestamp.start).ToLocalTime().ToString();
+        //trim the timezone and seconds
+        localTime = localTime.Substring(0, localTime.Length-13) + localTime.Substring(localTime.Length - 10, 3);
+        ImGui.TextColored(timestamp.statusColor(),localTime);
+        ImGui.TableNextColumn();
+        ImGui.Text(timestamp.tracker.name);
+    }
 }

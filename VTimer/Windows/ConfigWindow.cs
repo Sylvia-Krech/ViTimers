@@ -7,17 +7,10 @@ using VTimer.Helpers;
 
 namespace VTimer.Windows;
 
-enum Tab {
-    Main,
-    Eureka,
-    Weather,
-}
-
-public class MainWindow : Window, IDisposable
+public class ConfigWindow : Window, IDisposable
 {
-    private Plugin Plugin;
 
-    public MainWindow(Plugin plugin) : base(
+    public ConfigWindow() : base(
         "VTimer Configuration, Version: " + Service.Version) //ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         this.SizeConstraints = new WindowSizeConstraints
@@ -26,7 +19,6 @@ public class MainWindow : Window, IDisposable
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
-        this.Plugin = plugin;
     }
 
     public void Dispose()
@@ -49,10 +41,6 @@ public class MainWindow : Window, IDisposable
             }            
             if (ImGui.BeginTabItem("Farms")) {
                 Farms.Draw();
-                ImGui.EndTabItem();
-            }
-            if (ImGui.BeginTabItem("Weather")) {
-                Weather.Draw();
                 ImGui.EndTabItem();
             }
             

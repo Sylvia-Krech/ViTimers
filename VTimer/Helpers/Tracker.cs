@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -11,12 +12,12 @@ namespace VTimer.Helpers;
 public class Tracker {
     internal static long backSearch = 180 * 60;
     internal string name;
+    internal bool notified = false;
     internal Conditions condition;
-    internal long previousWindowStart;
+    internal Timestamp previousWindow;
     internal readonly Val<int> forewarning;
     internal readonly Val<int> minDuration; 
-    internal long previousWindowEnd;
-    private List<(long, long)> nextWindows = new(); // TRUE time for windows, do not add forewarning.
+    internal List<Timestamp> nextWindows = new(); // TRUE time for windows, do not add forewarning.
 
     public Tracker(string n, Conditions c, Val<int> minDur, Val<int> fw) {
         this.name = n;
@@ -24,6 +25,7 @@ public class Tracker {
         this.forewarning = fw;
         this.minDuration = minDur;
         this.findAnotherWindow();
+        this.previousWindow = new(0, 0, this);
         while (this.endOfFirstWindow() < EorzeanTime.now()) {
             this.recycle();
         }
@@ -39,24 +41,28 @@ public class Tracker {
     }
 
     public long startOfFirstWindow() {
-        return nextWindows.First().Item1;
+        return nextWindows.First().start;
     }
     
     public long endOfFirstWindow() {
-        return nextWindows.First().Item2;
+        return nextWindows.First().end;
     }
 
     public long startOfLastWindow() {
-        return nextWindows.First().Item1;
+        return nextWindows.First().start;
     }
 
     public long endOfLastWindow() {
-        return nextWindows.Last().Item2;
+        return nextWindows.Last().end;
+    }
+
+    public long numberOfWindowsInQueue() {
+        return nextWindows.Count;
     }
 
     public long getUpcommingWindow(){
-        if (this.previousWindowStart > EorzeanTime.now()) {
-            return this.previousWindowStart;
+        if (this.previousWindow.start > EorzeanTime.now()) {
+            return this.previousWindow.start;
         }
         return startOfFirstWindow();
     }
@@ -75,7 +81,10 @@ public class Tracker {
             return;
         } 
 
-        nextWindows.Add(time);
+        Timestamp ts = new Timestamp(time, this);
+        Service.ClosestWindows.Add(ts);
+        Service.ClosestWindows.Sort();
+        nextWindows.Add(ts);
 
         if (time.Item1 > EorzeanTime.now()) {
             Service.PluginLog.Verbose("Created "+ name + " tracker, it is up in " + (time.Item1 - EorzeanTime.now()).ToString() + " seconds." +
@@ -85,9 +94,14 @@ public class Tracker {
 
     public void recycle() {
         this.findAnotherWindow();
-        this.previousWindowStart = this.startOfFirstWindow();
-        this.previousWindowEnd = this.endOfFirstWindow();
+        this.previousWindow = this.nextWindows[0];
+        Service.ClosestWindows.Remove(this.nextWindows[0]);
         this.nextWindows.RemoveAt(0);
+        notified = false;
+    }
+
+    public TimestampStatus upcommingWindowStatus(){
+        return this.nextWindows[0].getStatus();
     }
 
     public int getForewarning(){
@@ -95,15 +109,17 @@ public class Tracker {
     }
 
     private long getGap(){
-        return this.startOfFirstWindow() - this.previousWindowStart;
+        return this.startOfFirstWindow() - this.previousWindow.start;
     }
 
     public void notify() {
+        if (notified) { return; }
+        notified = true;
         long delay = System.Math.Max(this.startOfFirstWindow() - EorzeanTime.now(), 0);
         string output = "[VTimer] " + this.name + " is up" + (delay == 0 ? "." : " in " + delay + " seconds.");
         if (Groups.EurekaNMs.Contains(this.name)) {
             long minutesAgo = this.getGap()/60;
-            if (minutesAgo > 180-20) {
+            if (minutesAgo > 180-20 && minutesAgo < 180) {
                 output += " It was last up " + minutesAgo + " mins ago, it will spawn, but it may be delayed up to " + (180 - minutesAgo) + " mins";
             } else if (minutesAgo < 180) {
                 output += " It was last up " + minutesAgo + " mins ago, it may not spawn if the oldest person in instance has <" + (180 - minutesAgo) + " mins remaining";
@@ -120,15 +136,21 @@ public class Tracker {
     public void isUpNextInText() {
         //Service.PluginLog.Verbose("Attempting to draw " + this.name + "'s timer to the screen");
         string output = this.name;
-        if (this.previousWindowEnd < EorzeanTime.now()){
-            output += " is up next in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
-            ImGui.TextColored(Colors.CurrentlyDown, output);
-        } else if (this.previousWindowStart > EorzeanTime.now()) {
-            output += " is up soon, in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
-            ImGui.TextColored(Colors.UpSoon, output);
-        } else {
-            output += " is up now, for " + EorzeanTime.delayToTimeText(this.previousWindowEnd - EorzeanTime.now());
-            ImGui.TextColored(Colors.CurrentlyUp, output);
+        switch (this.upcommingWindowStatus()) {
+            case TimestampStatus.up:
+                output += " is up now, for " + EorzeanTime.delayToTimeText(this.endOfFirstWindow() - EorzeanTime.now());
+                ImGui.TextColored(Colors.up, output);
+                break;
+
+            case TimestampStatus.upSoon:
+                output += " is up soon, in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
+                ImGui.TextColored(Colors.upSoon, output);
+                break;
+
+            case TimestampStatus.upEventually:
+                output += " is up next in " + EorzeanTime.delayToTimeText(this.getUpcommingWindow() - EorzeanTime.now());
+                ImGui.TextColored(Colors.upEventually, output);
+                break;
         }
     }
 }

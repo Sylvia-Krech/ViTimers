@@ -16,14 +16,16 @@ namespace VTimer
     {
         public string Name => "VTimer";
         private long counter = 0;
-        private const string CommandName = "/vtimer";
+        internal bool filledQueues = false;
+        private const string MainCommandName = "/vtimer";
+        private const string ConfigCommandName = "/vtimerconfig";
 
         private DalamudPluginInterface PluginInterface { get; init; }
-        private ICommandManager CommandManager { get; init; }
         //public PluginConfiguration Configuration { get; init; }
         public WindowSystem WindowSystem = new("VTimer");
 
-        public MainWindow MainWindow { get; init; }
+        public ConfigWindow ConfigWindow { get; init; } 
+        public ForecastWindow ForecastWindow { get; init; } 
 
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
@@ -33,27 +35,33 @@ namespace VTimer
             _ = pluginInterface.Create<Service>();
             Service.Plugin = this;
 
-            this.PluginInterface = pluginInterface;
+            PluginInterface = pluginInterface;
             Service.CommandManager = commandManager;
 
-            Service.Configuration = this.PluginInterface.GetPluginConfig() as PluginConfiguration ?? new PluginConfiguration();
-            Service.Configuration.Initialize(this.PluginInterface);
+            Service.Configuration = PluginInterface.GetPluginConfig() as PluginConfiguration ?? new PluginConfiguration();
+            Service.Configuration.Initialize(PluginInterface);
 
             // you might normally want to embed resources and load them from the manifest stream
             // var imagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
             // var goatImage = this.PluginInterface.UiBuilder.LoadImage(imagePath);
-
-            MainWindow = new MainWindow(this);
             
-            WindowSystem.AddWindow(MainWindow);
+            ConfigWindow = new ConfigWindow();
+            ForecastWindow = new ForecastWindow();
 
-            Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+            WindowSystem.AddWindow(ConfigWindow);
+            WindowSystem.AddWindow(ForecastWindow);
+
+            Service.CommandManager.AddHandler(MainCommandName, new CommandInfo(OnCommand)
             {
-                HelpMessage = "A useful message to display in /xlhelp, such as this"
+                HelpMessage = "To view upcomming windows"
+            });
+            Service.CommandManager.AddHandler(ConfigCommandName, new CommandInfo(OnCommand)
+            {
+                HelpMessage = "Open VTimer settings"
             });
 
-            this.PluginInterface.UiBuilder.Draw += DrawUI;
-            this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
             Helpers.PresetTimers.LoadTimers();
 
@@ -64,17 +72,22 @@ namespace VTimer
         {
             this.WindowSystem.RemoveAllWindows();
             
-            MainWindow.Dispose();
+            ConfigWindow.Dispose();
             
-            Service.CommandManager.RemoveHandler(CommandName);
+            Service.CommandManager.RemoveHandler(MainCommandName);
             Service.Framework.Update -= onUpdate;
             Service.Trackers = new();
+            Service.ClosestWindows = new();
         }
 
         private void OnCommand(string command, string args)
         {
-            // in response to the slash command, just display our main ui
-            MainWindow.IsOpen = true;
+            Service.PluginLog.Verbose("Command|" + command + "|    args|" + args +"|");
+            if (command == MainCommandName){
+                ForecastWindow.IsOpen = !ForecastWindow.IsOpen;
+            } else if (command == ConfigCommandName) {
+                ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
+            }
         }
 
         private void DrawUI()
@@ -84,22 +97,36 @@ namespace VTimer
 
         public void DrawConfigUI()
         {
-            MainWindow.IsOpen = true;
+            ConfigWindow.IsOpen = true;
         }
 
-        //TODO defer adding up to some constant number of windows to each active tracker over the course of several frames to reduce chance of stuttering
-        //  while also enabling the option for future development of a "upcomming best windows" type of thing, especially useful for farms.
         public void onUpdate(IFramework framework) {
             counter += 1;
             if (counter % 60 == 0) {
-                var now = EorzeanTime.now();
                 foreach (Tracker tracker in Service.Trackers) {
-                    //Service.PluginLog.Verbose(tracker.name + " next window: " + tracker.getNextWindowInQueue()%10000 + " now + forewarning: " + (now+tracker.getForewarning()) %10000);
-                    if (tracker.startOfFirstWindow() <= now + tracker.getForewarning() ) {
-                        Service.PluginLog.Verbose("Notifying that " + tracker.name + " is up in " + (tracker.startOfFirstWindow() - now)  + " seconds");
-                        tracker.notify();
-                        tracker.recycle();
+                    switch (tracker.upcommingWindowStatus()) {
+                        case TimestampStatus.upSoon:
+                            tracker.notify();
+                            break;
+                        case TimestampStatus.past:
+                            tracker.recycle();
+                            break;
+                        default:
+                            break;
                     }
+                }
+            } else if (!filledQueues) {
+                var now = EorzeanTime.now();
+                bool madeNewTimestamp = false;
+                foreach (Tracker tracker in Service.Trackers) {
+                    if (tracker.numberOfWindowsInQueue() <  Consts.Numbers.MaxWindowsToPreload && now + Consts.Numbers.MaxOutlook > tracker.endOfLastWindow() ) {
+                        tracker.findAnotherWindow();
+                        madeNewTimestamp = true;
+                        break;
+                    }
+                }
+                if (!madeNewTimestamp) {
+                    filledQueues = true;
                 }
             }
         }

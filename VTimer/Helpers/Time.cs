@@ -4,7 +4,7 @@ using VTimer.Consts;
 
 namespace VTimer.Helpers;
 
-//TODO refactor this all into static member functions, as ETM does not store any values internally, then remove ETM from Service
+
 public static class EorzeanTime {
     public static readonly int WeatherWindowDuration = 8;
     public static readonly int SecondsInEorzeanHour = 175;
