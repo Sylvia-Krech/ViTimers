@@ -20,7 +20,7 @@ namespace VTimer
         private const string MainCommandName = "/vtimer";
         private const string ConfigCommandName = "/vtimerconfig";
 
-        private DalamudPluginInterface PluginInterface { get; init; }
+        private IDalamudPluginInterface PluginInterface { get; init; }
         //public PluginConfiguration Configuration { get; init; }
         public WindowSystem WindowSystem = new("VTimer");
 
@@ -28,12 +28,16 @@ namespace VTimer
         public ForecastWindow ForecastWindow { get; init; } 
 
         public Plugin(
-            [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-            [RequiredVersion("1.0")] ICommandManager commandManager
+            IDalamudPluginInterface pluginInterface,
+            ICommandManager commandManager
             )
         {
             _ = pluginInterface.Create<Service>();
             Service.Plugin = this;
+
+            Service.PluginLog.Verbose("Loading VTimer...2 ");
+            Service.PluginLog.Verbose("Current time: " + Helpers.EorzeanTime.getCurrentEorzeanTime() );
+            Service.PluginLog.Verbose("Current weather number: " + Helpers.EorzeanTime.getCurrentWeatherNumber() );
 
             PluginInterface = pluginInterface;
             Service.CommandManager = commandManager;
@@ -84,8 +88,10 @@ namespace VTimer
         {
             Service.PluginLog.Verbose("Command|" + command + "|    args|" + args +"|");
             if (command == MainCommandName){
+                Service.PluginLog.Verbose("Toggling main window");
                 ForecastWindow.IsOpen = !ForecastWindow.IsOpen;
             } else if (command == ConfigCommandName) {
+                Service.PluginLog.Verbose("Toggling config window");
                 ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
             }
         }

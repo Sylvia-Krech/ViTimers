@@ -11,14 +11,13 @@ public class ConfigWindow : Window, IDisposable
 {
 
     public ConfigWindow() : base(
-        "VTimer Configuration, Version: " + Service.Version) //ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        "VTimer Configuration, Version: ????") //ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         this.SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(200, 200),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-
     }
 
     public void Dispose()
@@ -41,6 +40,10 @@ public class ConfigWindow : Window, IDisposable
             }            
             if (ImGui.BeginTabItem("Farms")) {
                 Farms.Draw();
+                ImGui.EndTabItem();
+            }            
+            if (ImGui.BeginTabItem("Custom")) {
+                CustomTab.Draw();
                 ImGui.EndTabItem();
             }
             

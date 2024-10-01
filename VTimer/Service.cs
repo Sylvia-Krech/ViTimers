@@ -31,7 +31,7 @@ internal class Service
     [PluginService] public static ICommandManager CommandManager { get; set; } = null!;
     [PluginService] public static IDataManager DataManager { get; set; } = null!;
     [PluginService] public static IGameGui GameGui { get; set; } = null!;
-    [PluginService] public static DalamudPluginInterface Interface { get; set; } = null!;
+    [PluginService] public static IDalamudPluginInterface Interface { get; set; } = null!;
     [PluginService] public static ISigScanner SigScanner { get; set; } = null!;
     [PluginService] public static IKeyState KeyState { get; set; } = null!;
     [PluginService] public static IPluginLog PluginLog { get; set; } = null!;

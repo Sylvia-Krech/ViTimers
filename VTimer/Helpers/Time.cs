@@ -20,11 +20,11 @@ public static class EorzeanTime {
         // Do the magic 'cause for calculations 16:00 is 0, 00:00 is 8 and 08:00 is 16
         int increment = (bell + 8 - (bell % 8)) % 24;
         // Take Eorzea days since unix epoch
-        int totalDays = (int)(unix / 4200) >>> 0;
-        int calcBase = totalDays * 100 + increment;
-        int step1 = ((calcBase << 0xB) ^ calcBase) >>> 0;
-        int step2 = ((step1 >>> 8) ^ step1) >>> 0;
-        return step2 % 100;
+        uint totalDays = (uint)(unix / 4200) >>> 0;
+        uint seed = totalDays * 100 + (uint)increment;
+        uint step1 = (seed << 11) ^ seed;
+        uint step2 = (step1 >>> 8) ^ step1;
+        return (int)(step2 % 100);
     }
 
     public static Consts.Weathers weatherFromUnix(Zones zone, long unix) {
