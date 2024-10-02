@@ -36,13 +36,13 @@ public class Timestamp : IComparable<Timestamp> {
 
     public TimestampStatus getStatus() {
         long now = EorzeanTime.now();
-        if ( this.start <= now ) {
+        if ( this.end < now ) {
+            return TimestampStatus.past;
+        } else if ( this.start <= now ) {
             return TimestampStatus.up;
         } else if ( this.start <= now + tracker.getForewarning() ) {
             return TimestampStatus.upSoon;
-        } else if ( this.end < now ) {
-            return TimestampStatus.past;
-        }
+        } 
         return TimestampStatus.upEventually;
     }
 

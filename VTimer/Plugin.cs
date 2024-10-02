@@ -110,11 +110,14 @@ namespace VTimer
             counter += 1;
             if (counter % 60 == 0) {
                 foreach (Tracker tracker in Service.Trackers) {
+                    Service.PluginLog.Verbose(tracker.name + " is " + tracker.upcommingWindowStatus());
                     switch (tracker.upcommingWindowStatus()) {
                         case TimestampStatus.upSoon:
+                            Service.PluginLog.Verbose("Notifying " + tracker.name);
                             tracker.notify();
                             break;
                         case TimestampStatus.past:
+                            Service.PluginLog.Verbose("Recycling " + tracker.name);
                             tracker.recycle();
                             break;
                         default:
