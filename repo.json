@@ -16,9 +16,9 @@
       "LoadPriority": 99999,
       "LoadRequiredState": 2,
       "LoadSync": true,
-      "DownloadLinkInstall": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.0.4/latest.zip",
-      "DownloadLinkTesting": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.0.4/latest.zip",
-      "DownloadLinkUpdate": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.0.4/latest.zip",
+      "DownloadLinkInstall": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.1.0/latest.zip",
+      "DownloadLinkTesting": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.1.0/latest.zip",
+      "DownloadLinkUpdate": "https://github.com/SylviaSK/VTimer/releases/download/v0.0.1.0/latest.zip",
       "IconUrl": "https://raw.githubusercontent.com/SylviaSK/VTimer/master/Data/VTimer.png",
       "Tags": [
         "Timers"
