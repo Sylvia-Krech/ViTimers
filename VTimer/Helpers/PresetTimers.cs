@@ -34,6 +34,7 @@ class PresetTimers {
         if (!trackerExists(name)) {
             var condition = Presets.Conditions[name];
             Service.Trackers.Add(new Tracker(name, condition, minDuration, forewarning));
+            Service.Plugin.filledQueues = false;
         } else {
             Service.PluginLog.Warning("Attempted to call AddTimer when a timer of the same name already exists");
         }

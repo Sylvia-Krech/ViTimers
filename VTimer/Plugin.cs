@@ -9,6 +9,9 @@ using VTimer.Helpers;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using FFXIVClientStructs.FFXIV.Component.Shell;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace VTimer
 {
@@ -16,7 +19,7 @@ namespace VTimer
     {
         public string Name => "VTimer";
         private long counter = 0;
-        internal bool filledQueues = false;
+        public bool filledQueues = false;
         private const string MainCommandName = "/vtimer";
         private const string ConfigCommandName = "/vtimerconfig";
 
@@ -57,11 +60,7 @@ namespace VTimer
 
             Service.CommandManager.AddHandler(MainCommandName, new CommandInfo(OnCommand)
             {
-                HelpMessage = "To view upcomming windows"
-            });
-            Service.CommandManager.AddHandler(ConfigCommandName, new CommandInfo(OnCommand)
-            {
-                HelpMessage = "Open VTimer settings"
+                HelpMessage = "To view upcomming windows\nconfig to access the settings\net for calculating unix time from eorzean"
             });
 
             PluginInterface.UiBuilder.Draw += DrawUI;
@@ -81,19 +80,50 @@ namespace VTimer
             Service.CommandManager.RemoveHandler(MainCommandName);
             Service.Framework.Update -= onUpdate;
             Service.Trackers = new();
-            Service.ClosestWindows = new();
         }
 
-        private void OnCommand(string command, string args)
+        private void OnCommand(string command, string arguments)
         {
-            Service.PluginLog.Verbose("Command|" + command + "|    args|" + args +"|");
+            Service.PluginLog.Verbose("Command|" + command + "|    args|" + arguments +"|");
+            List<string> args = arguments.Split(" ").ToList();
+            string mainArg = args[0].ToLower();
             if (command == MainCommandName){
-                Service.PluginLog.Verbose("Toggling main window");
-                ForecastWindow.IsOpen = !ForecastWindow.IsOpen;
-            } else if (command == ConfigCommandName) {
-                Service.PluginLog.Verbose("Toggling config window");
-                ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
-            }
+                //Config window
+                if (mainArg == "config" || mainArg == "c") {
+                    Service.PluginLog.Verbose("Toggling config window");
+                    ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
+                } 
+
+                //Forecast window
+                else if (mainArg == "") {
+                    Service.PluginLog.Verbose("Toggling main window");
+                    ForecastWindow.IsOpen = !ForecastWindow.IsOpen;
+                }
+
+                //Unix command
+                else if (mainArg == "et") {
+                    Service.PluginLog.Verbose("Getting Eorzean Time");
+                    List<long> inputs = new List<long>();
+                    args.RemoveAt(0); //remove "et"
+                    foreach (string s in args){
+                        inputs.Add(long.Parse(s));
+                    }
+                    if (inputs.Count() < 1) {
+                        Service.PluginLog.Warning("No time provided");
+                        return;
+                    }
+                    if (inputs.Count() < 2) {
+                        inputs.Add(0);
+                    }
+                    if (inputs.Count() < 3) {
+                        inputs.Add(0);
+                    }
+                    long output = EorzeanTime.GetEorzeanAsUnix(inputs[0], inputs[1], inputs[2], EorzeanTime.now());
+                    if (output != -1) {
+                        Service.Chat.Print("" + output);
+                    }                    
+                } 
+            } 
         }
 
         private void DrawUI()
@@ -110,7 +140,7 @@ namespace VTimer
             counter += 1;
             if (counter % 60 == 0) {
                 foreach (Tracker tracker in Service.Trackers) {
-                    Service.PluginLog.Verbose(tracker.name + " is " + tracker.upcommingWindowStatus());
+                    //Service.PluginLog.Verbose(tracker.name + " is " + tracker.upcommingWindowStatus());
                     switch (tracker.upcommingWindowStatus()) {
                         case TimestampStatus.upSoon:
                             Service.PluginLog.Verbose("Notifying " + tracker.name);
@@ -129,7 +159,9 @@ namespace VTimer
                 bool madeNewTimestamp = false;
                 foreach (Tracker tracker in Service.Trackers) {
                     if (tracker.numberOfWindowsInQueue() <  Consts.Numbers.MaxWindowsToPreload && now + Consts.Numbers.MaxOutlook > tracker.endOfLastWindow() ) {
+                        Service.PluginLog.Verbose("num in queue before: " + tracker.numberOfWindowsInQueue());
                         tracker.findAnotherWindow();
+                        Service.PluginLog.Verbose("num in queue after: " + tracker.numberOfWindowsInQueue());
                         madeNewTimestamp = true;
                         break;
                     }

@@ -33,6 +33,10 @@ public class ForecastWindow : Window, IDisposable
                 Forecast.Draw();
                 ImGui.EndTabItem();
             }
+            if (ImGui.BeginTabItem("Events")) {
+                TimedEvents.Draw();
+                ImGui.EndTabItem();
+            }
             if (ImGui.BeginTabItem("Weather")) {
                 Weather.Draw();
                 ImGui.EndTabItem();

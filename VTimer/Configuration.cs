@@ -17,6 +17,8 @@ namespace VTimer
         // Anything that will be saved to the config file must be public, not internal.
         public Val<int> EurekaForewarning = new(180);
         public Val<int> FarmForewarning = new(180);
+
+        public Val<int> RealForewarning = new(60*15);
         // In Eorzean Hours
         public Val<int> FarmMinDuration = new(24);
 
@@ -34,7 +36,13 @@ namespace VTimer
             {Names.Care, false},
             {Names.Support, false},
             {Names.History, false},
-            {Names.Artistry, false}
+            {Names.Artistry, false},
+
+            {Names.Verminion, false},
+            {Names.Boat, false},
+            {Names.OpenTournament, false},
+            {Names.BiweeklyTournament, false},
+            {Names.FashionReport, false},
         };
 
 

@@ -21,9 +21,7 @@ public class Farms {
             Service.Configuration.Save();
         }
 
-        string test = "";
         foreach (string farmName in Groups.Farms ){
-            test += farmName + ", ";
             DrawTools.DrawCheckBox(farmName, Service.Configuration.FarmMinDuration, Service.Configuration.FarmForewarning );
         }
     }

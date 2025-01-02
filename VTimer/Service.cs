@@ -22,7 +22,7 @@ internal class Service
     internal static List<Tracker> CustomTrackers { get; set; } = new();
     
     //must be sorted whenever things are added I guess, because SortedList isn't actually a goddamn list, and is functionally a dictionary
-    internal static List<Timestamp> ClosestWindows { get; set; } = new(); 
+    //internal static List<Timestamp> ClosestWindows { get; set; } = new(); 
 
 
     [PluginService] public static IFramework Framework { get; set; } = null!;

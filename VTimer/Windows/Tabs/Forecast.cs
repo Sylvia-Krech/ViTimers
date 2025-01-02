@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using ImGuiNET;
 using VTimer.Consts;
 using VTimer.Helpers;
@@ -9,13 +11,18 @@ public class Forecast {
         if (ImGui.BeginTable("table1", 2))
         {
             const int MaxRows = 20;
-            int rowCount = System.Math.Min(MaxRows, Service.ClosestWindows.Count);
+            List<Timestamp> windows = new List<Timestamp>();
+            foreach (Tracker T in Service.Trackers) {
+                windows.AddRange(T.nextWindows);
+            }
+            int rowCount = System.Math.Min(MaxRows, windows.Count);
+            windows.Sort();
             for (int row = 0; row < rowCount; row++)
             {
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
 
-                Timestamp ts = Service.ClosestWindows[row];
+                Timestamp ts = windows[row];
 
                 DrawTools.DrawWindowPair(ts);
             }
